@@ -12,11 +12,11 @@ tags:
 This folder is a self-contained snapshot of the `Adaptative_QITE` project: everything needed to
 understand what was done, check that it is right, and continue it. The
 order of the work is given by **phases** (below), and every file is reached either by an Obsidian
-link or by its path relative to `QITE_Hand_Off/`.
+link or by its path relative to `Adaptative-QITE/`.
 
 > [!note] Link convention in this folder
 > Links are written with the path from the folder name, e.g.
-> `[[QITE_Hand_Off/Notes_on_Project/Technical_Resume_Project_Limiting_QITE|Technical resume]]`.
+> `[[Adaptative-QITE/Notes_on_Project/Technical_Resume_Project_Limiting_QITE|Technical resume]]`.
 > Figure embeds use the same form.
 
 ## The project in one paragraph
@@ -25,7 +25,7 @@ Variational QITE integrates the linear system $M(\theta)\,\dot\theta = Y(\theta)
 principle. Each evaluation of $\dot\theta$ costs $O(N^2)$ circuits for $N$ parameters, so the step
 size $\Delta\tau$ sets the circuit bill directly, and the quality of the solve depends on
 $\mathrm{cond}(M)$ and on the pseudo-inverse cutoff `rcond`. The project starts from an internal
-memo ([[QITE_Hand_Off/Research_Papers/QITE_timestep.pdf|QITE_timestep.pdf]], no arXiv/DOI) that treats this as an ODE for an
+memo ([[Adaptative-QITE/Research_Papers/QITE_timestep.pdf|QITE_timestep.pdf]], no arXiv/DOI) that treats this as an ODE for an
 RKF-type controller with a hardware-noise floor, and asks how far variational QITE can go under
 noise and whether adaptive time-stepping helps. All numerical work is on H$_2$ in STO-3G on two
 qubits (5- and 9-parameter ansätze). Work done with the LG Electronics Toronto AI team (Thi Ha
@@ -36,15 +36,15 @@ Kyaw, Jack Baker, Gaurav Saxena).
 1. **The report** — `Presentations/Adaptative_QITE_Status_Report.pdf` (source:
    `Presentations/Adaptative_QITE_Status_Report.tex`). Five phases in paper format, a claims
    ledger (Table XVII), derivations (Appendix B) and reviewer Q&A (Appendix C). Anticipated questions
-   with longer answers: [[QITE_Hand_Off/Presentations/Questions_From_Final_Report|Questions_From_Final_Report]].
-2. **The system of record** — [[QITE_Hand_Off/Notes_on_Project/Technical_Resume_Project_Limiting_QITE|Technical_Resume_Project_Limiting_QITE]]: framework, error bounds,
+   with longer answers: [[Adaptative-QITE/Presentations/Questions_From_Final_Report|Questions_From_Final_Report]].
+2. **The system of record** — [[Adaptative-QITE/Notes_on_Project/Technical_Resume_Project_Limiting_QITE|Technical_Resume_Project_Limiting_QITE]]: framework, error bounds,
    benchmark, roadmap, open research questions.
 3. **The phase notes**, in the order of the table below.
-4. **The two audits** — [[QITE_Hand_Off/Audits/Audit_Project_Wide/Audit_Adaptative_QITE|Audit_Adaptative_QITE]] (project-wide, findings F1–F12, fix modules M1–M6, routes
-   in [[QITE_Hand_Off/Audits/Audit_Project_Wide/R_Future_Routes|R_Future_Routes]]) and [[QITE_Hand_Off/Audits/Audit_Adam_QITE/Audit_Adam_QITE|Audit_Adam_QITE]] (findings G1–G7).
-5. **The plan and the P1/P2 results** — [[QITE_Hand_Off/Route_03_and_Beyond_Trot/Plan_Beyond_Trot_Into_Route_03_and_Adam|Plan_Beyond_Trot_Into_Route_03_and_Adam]], then P1 and P2 findings, then the
-   deck [[QITE_Hand_Off/Presentations/Adaptative_QITE_Beyond_Trot_P1_P2|Adaptative_QITE_Beyond_Trot_P1_P2]] and its
-   [[QITE_Hand_Off/Presentations/Presentator_Notes_Beyond_Trot_P1_P2|Presentator_Notes_Beyond_Trot_P1_P2]] (glossary, slide-by-slide script, tough-questions bank).
+4. **The two audits** — [[Adaptative-QITE/Audits/Audit_Project_Wide/Audit_Adaptative_QITE|Audit_Adaptative_QITE]] (project-wide, findings F1–F12, fix modules M1–M6, routes
+   in [[Adaptative-QITE/Audits/Audit_Project_Wide/R_Future_Routes|R_Future_Routes]]) and [[Adaptative-QITE/Audits/Audit_Adam_QITE/Audit_Adam_QITE|Audit_Adam_QITE]] (findings G1–G7).
+5. **The plan and the P1/P2 results** — [[Adaptative-QITE/Route_03_and_Beyond_Trot/Plan_Beyond_Trot_Into_Route_03_and_Adam|Plan_Beyond_Trot_Into_Route_03_and_Adam]], then P1 and P2 findings, then the
+   deck [[Adaptative-QITE/Presentations/Adaptative_QITE_Beyond_Trot_P1_P2|Adaptative_QITE_Beyond_Trot_P1_P2]] and its
+   [[Adaptative-QITE/Presentations/Presentator_Notes_Beyond_Trot_P1_P2|Presentator_Notes_Beyond_Trot_P1_P2]] (glossary, slide-by-slide script, tough-questions bank).
 
 ## The five phases
 
@@ -53,24 +53,24 @@ Phase numbers are the report's. Phase II (Adam) was written on top of Phase III 
 
 | Phase | Question | Folder | Entry note | Script | Outcome (report Table I) |
 |---|---|---|---|---|---|
-| I | Does the Saxena–Shalabi–Kyaw (QDP) noise analysis reproduce? | `Replications/practical-limitations-qdp/` | [[QITE_Hand_Off/Notes_on_Project/Replication_Practical_Limitations_QDP\|Replication_Practical_Limitations_QDP]] | `replicate.py` | T1, T4 reproduced; T2, T5 partially; T3 not. Factor-of-two correction to Theorem 2 |
-| II | Does Adam-style memory improve the step law? | `Adam_QITE/`, `Audits/Audit_Adam_QITE/` | [[QITE_Hand_Off/Adam_QITE/Report_Adam_QITE\|Report_Adam_QITE]] | `adam_qite.py`, `verify_audit.py` | Ratchet wins at matched budget; E2 withdrawn; E3 re-attributed to the cap; zero-cost error estimator validated; 147 values pinned, 0 drift |
-| III | Route 3: physics-indicator controller (Targets A–D) | `Attack_Route_03/`, `Audits/Audit_Project_Wide/` | [[QITE_Hand_Off/Notes_on_Project/Adaptive_QITE_Attack_Route_3_Implementation\|Adaptive_QITE_Attack_Route_3_Implementation]] | `adaptive_qite.py` | 2.2× closer to the floor than fixed-step Euler at a matched 732 circuits; debias factor corrected; noise-floor claim retracted |
-| IV | Do the figures of Assi–Vogl–Kumari–LeBlanc (BT) reproduce? | `Replications/Beyond_Trot/` | [[QITE_Hand_Off/Notes_on_Project/Replication_Beyond_Trotterization\|Replication_Beyond_Trotterization]] | `replicate.py` (`--check`) | Figures reproduce; four textual claims refuted; boundary-layer target T6 pinned |
-| V | P1: what is the Route-3 stiffness? P2: does `tol` control the error? | `Route_03_and_Beyond_Trot/` | [[QITE_Hand_Off/Route_03_and_Beyond_Trot/Plan_Beyond_Trot_Into_Route_03_and_Adam\|Plan_Beyond_Trot_Into_Route_03_and_Adam]] | `Proposal_1/p1_singularity.py`, `Proposal_2/p2_tol_proportionality.py` | Chart singularity, no gauge leakage (51 pinned); no tolerance fit possible (93 pinned) |
+| I | Does the Saxena–Shalabi–Kyaw (QDP) noise analysis reproduce? | `Replications/practical-limitations-qdp/` | [[Adaptative-QITE/Notes_on_Project/Replication_Practical_Limitations_QDP\|Replication_Practical_Limitations_QDP]] | `replicate.py` | T1, T4 reproduced; T2, T5 partially; T3 not. Factor-of-two correction to Theorem 2 |
+| II | Does Adam-style memory improve the step law? | `Adam_QITE/`, `Audits/Audit_Adam_QITE/` | [[Adaptative-QITE/Adam_QITE/Report_Adam_QITE\|Report_Adam_QITE]] | `adam_qite.py`, `verify_audit.py` | Ratchet wins at matched budget; E2 withdrawn; E3 re-attributed to the cap; zero-cost error estimator validated; 147 values pinned, 0 drift |
+| III | Route 3: physics-indicator controller (Targets A–D) | `Attack_Route_03/`, `Audits/Audit_Project_Wide/` | [[Adaptative-QITE/Notes_on_Project/Adaptive_QITE_Attack_Route_3_Implementation\|Adaptive_QITE_Attack_Route_3_Implementation]] | `adaptive_qite.py` | 2.2× closer to the floor than fixed-step Euler at a matched 732 circuits; debias factor corrected; noise-floor claim retracted |
+| IV | Do the figures of Assi–Vogl–Kumari–LeBlanc (BT) reproduce? | `Replications/Beyond_Trot/` | [[Adaptative-QITE/Notes_on_Project/Replication_Beyond_Trotterization\|Replication_Beyond_Trotterization]] | `replicate.py` (`--check`) | Figures reproduce; four textual claims refuted; boundary-layer target T6 pinned |
+| V | P1: what is the Route-3 stiffness? P2: does `tol` control the error? | `Route_03_and_Beyond_Trot/` | [[Adaptative-QITE/Route_03_and_Beyond_Trot/Plan_Beyond_Trot_Into_Route_03_and_Adam\|Plan_Beyond_Trot_Into_Route_03_and_Adam]] | `Proposal_1/p1_singularity.py`, `Proposal_2/p2_tol_proportionality.py` | Chart singularity, no gauge leakage (51 pinned); no tolerance fit possible (93 pinned) |
 
 Per-folder READMEs (results and run instructions): `Replications/practical-limitations-qdp/README.md`,
 `Replications/Beyond_Trot/README.md`, `Attack_Route_03/README.md`, `Adam_QITE/README.md`.
-Paper notes: [[QITE_Hand_Off/Notes_on_Project/Practical_Limitations_of_Quantum_Data_Propagation_on_Noisy_Quantum_Processors|Practical_Limitations_of_Quantum_Data_Propagation_on_Noisy_Quantum_Processors]],
-[[QITE_Hand_Off/Notes_on_Project/Beyond_Trotterization_Variational_Product_Formulas_for_Quantum_Simulation|Beyond_Trotterization_Variational_Product_Formulas_for_Quantum_Simulation]],
-[[QITE_Hand_Off/Notes_on_Project/Understanding_Quantum_Imaginary_Time_Evolution_and_its_Variational_Form|Understanding_Quantum_Imaginary_Time_Evolution_and_its_Variational_Form]],
-[[QITE_Hand_Off/Notes_on_Project/Trading_Imaginary_Time_for_Randomness_in_Ground_State_Preparation|Trading_Imaginary_Time_for_Randomness_in_Ground_State_Preparation]]. PDFs are in `Research_Papers/`.
+Paper notes: [[Adaptative-QITE/Notes_on_Project/Practical_Limitations_of_Quantum_Data_Propagation_on_Noisy_Quantum_Processors|Practical_Limitations_of_Quantum_Data_Propagation_on_Noisy_Quantum_Processors]],
+[[Adaptative-QITE/Notes_on_Project/Beyond_Trotterization_Variational_Product_Formulas_for_Quantum_Simulation|Beyond_Trotterization_Variational_Product_Formulas_for_Quantum_Simulation]],
+[[Adaptative-QITE/Notes_on_Project/Understanding_Quantum_Imaginary_Time_Evolution_and_its_Variational_Form|Understanding_Quantum_Imaginary_Time_Evolution_and_its_Variational_Form]],
+[[Adaptative-QITE/Notes_on_Project/Trading_Imaginary_Time_for_Randomness_in_Ground_State_Preparation|Trading_Imaginary_Time_for_Randomness_in_Ground_State_Preparation]]. PDFs are in `Research_Papers/`.
 
 ## Folder map
 
 ```
-QITE_Hand_Off/
-  Start_Here_QITE_Hand_Off.md        this note
+Adaptative-QITE/
+  Start_Here_Adaptative-QITE.md        this note
   Presentations/                     report (.tex/.pdf), P1/P2 deck, presenter notes, Q&A bank
   Notes_on_Project/                  technical resume, paper notes, replication and implementation notes
   Research_Papers/                   source PDFs (incl. the internal memo)
@@ -93,9 +93,9 @@ Python 3.11 with PennyLane 0.45.1, NumPy and SciPy, in the `qml-julia` environme
 does not work non-interactively:
 
 ```bash
-~/micromamba/envs/qml-julia/bin/python QITE_Hand_Off/Adam_QITE/adam_qite.py --target all
-~/micromamba/envs/qml-julia/bin/python QITE_Hand_Off/Adam_QITE/verify_audit.py --target all
-~/micromamba/envs/qml-julia/bin/python QITE_Hand_Off/Route_03_and_Beyond_Trot/Proposal_2/p2_tol_proportionality.py --check
+~/micromamba/envs/qml-julia/bin/python Adaptative-QITE/Adam_QITE/adam_qite.py --target all
+~/micromamba/envs/qml-julia/bin/python Adaptative-QITE/Adam_QITE/verify_audit.py --target all
+~/micromamba/envs/qml-julia/bin/python Adaptative-QITE/Route_03_and_Beyond_Trot/Proposal_2/p2_tol_proportionality.py --check
 ```
 
 Every script takes `--target` and `--no-plots`; the replication, P1 and P2 scripts also take
@@ -132,7 +132,7 @@ retracted, withdrawn or unsupported. In short:
 
 ## Open items — where to continue
 
-From the plan ([[QITE_Hand_Off/Route_03_and_Beyond_Trot/Plan_Beyond_Trot_Into_Route_03_and_Adam|Plan_Beyond_Trot_Into_Route_03_and_Adam]], §6–§7) and the deck's closing slide:
+From the plan ([[Adaptative-QITE/Route_03_and_Beyond_Trot/Plan_Beyond_Trot_Into_Route_03_and_Adam|Plan_Beyond_Trot_Into_Route_03_and_Adam]], §6–§7) and the deck's closing slide:
 
 - **P1b** — state-space step control: detect $\dot\theta$ growing along the soft direction while
   $\sqrt{\dot\theta^\top M\dot\theta}$ stays flat, and bound $\Delta\tau\,\|d\rho/d\tau\|$ instead.
@@ -146,7 +146,7 @@ From the plan ([[QITE_Hand_Off/Route_03_and_Beyond_Trot/Plan_Beyond_Trot_Into_Ro
   stand-in for stochastic noise in P3c; whether P5 starts on QIM or LiH (the plan assumes QIM first);
   whether the two derived identities of plan §2 get a standalone note.
 - **Recorded, not all fixed:** findings G1–G7; see the remediation status in
-  [[QITE_Hand_Off/Audits/Audit_Adam_QITE/Audit_Adam_QITE|Audit_Adam_QITE]]. Also R7 in [[QITE_Hand_Off/Audits/Audit_Project_Wide/R_Future_Routes|R_Future_Routes]]: ask Gaurav Saxena (QDP paper
+  [[Adaptative-QITE/Audits/Audit_Adam_QITE/Audit_Adam_QITE|Audit_Adam_QITE]]. Also R7 in [[Adaptative-QITE/Audits/Audit_Project_Wide/R_Future_Routes|R_Future_Routes]]: ask Gaurav Saxena (QDP paper
   author, on the team) about the Appendix C condition numbers.
 - **Known limits** (report, limitations list): every threshold of the baseline is a chosen
   constant; G2 uses two seeds and E3 is a single run; a few checks (Target B reparametrization
