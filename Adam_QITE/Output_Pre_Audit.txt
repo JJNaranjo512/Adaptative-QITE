@@ -1,0 +1,115 @@
+
+========================================================================================
+E1  Adam-like controller vs Route-3 ratchet vs fixed step (noiseless, 5-param)
+========================================================================================
+  Same theta_0 (SEED_A), same ansatz, same gate, same cond(M) cap as Target A of
+  ../adaptive_qite.py -- the ONLY difference is how delta_tau evolves between
+  accepted steps. The Route-3 arm below must reproduce that script's Target A
+  exactly (172 steps, final E = -1.122993, 2069 circuits) or the comparison is
+  not measuring what it claims to.
+
+  Exact H2 ground energy (eigh): -1.145599
+
+  Adam controller        steps= 190  circuits=  2285  final E=-1.122852  error=+2.275e-02
+                         delta_tau range=[0.001003, 0.317]  retried-then-accepted=2  forced through unaccepted=0
+  Route 3 (ratchet)      steps= 172  circuits=  2069  final E=-1.122993  error=+2.261e-02
+                         delta_tau range=[0.001008, 0.298]  retried-then-accepted=3  forced through unaccepted=0
+  fixed step             steps=  61  circuits=   732  final E=-1.116691  error=+2.891e-02
+
+  [M6] At matched circuit budget (732 circuits):
+    Adam    E = -1.121027
+    Route 3 E = -1.120992
+    fixed   E = -1.116691
+
+  Variational floor of this ansatz (M6): E_floor = -1.124600
+    Adam    final E - floor = +1.748e-03
+    Route 3 final E - floor = +1.607e-03
+    fixed   final E - floor = +7.909e-03
+
+  Adam state over the run: e_hat median=2.902e-05, s_e range=[5.097e-05, 1.015], growth range=[1, 1.25]
+    McLachlan channel withheld growth on 0 of 190 steps (m_r_hat > 0.05)
+    setpoint diagnostic: e_hat > 1 (gate band) on 0/190 steps; growth < 1 on 0/190; growth pinned at GROW=1.25 on 10/190
+  Adam signal diagnostic (E1, SEED_A):
+    e_hat   median=2.902e-05  mean=2.751e-02  p90=3.468e-02  p99=5.481e-01  max=9.454e-01
+            mean/median=947.9 (1 = symmetric, >>1 = heavy right tail)   std/mean=3.93
+    s_e     mean=0.1401  ->  effective exponent s_e*K_I = 0.02102  vs ungated K_I = 0.15
+    growth  mean=1.03909  frozen (<1.001) on 49% of steps   (ungated law would average 1.2467)
+
+  wrote /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Attack_Route_03/Adam_QITE/figures/target_e1_controllers.png
+
+========================================================================================
+E2  Adam vs Route 3 under global depolarizing noise (5-param, debiased)
+========================================================================================
+  This is where the EMA either earns its place or does not. The Route-3 ratchet
+  reacts to every individual noisy dE (one bad reading halves delta_tau); the Adam
+  controller sees the same readings through m_e and additionally discounts them by
+  s_e when they stop being self-consistent. Each controller is scored against ITS
+  OWN p=0 run, so this measures noise robustness, not the p=0 gap already in E1.
+
+  p=0 reference, Adam      500 steps, final tau = 2.8615, final E = -1.123002, exit = max_steps
+  p=0 reference, Route 3   234 steps, final tau = 3.0097, final E = -1.123745, exit = tau_max
+  Adam signal diagnostic (E2 p=0 baseline, SEED_D):
+    e_hat   median=1.261e-05  mean=2.920e-02  p90=3.149e-02  p99=7.122e-01  max=9.938e-01
+            mean/median=2316.6 (1 = symmetric, >>1 = heavy right tail)   std/mean=4.11
+    s_e     mean=0.0893  ->  effective exponent s_e*K_I = 0.01339  vs ungated K_I = 0.15
+    growth  mean=1.01938  frozen (<1.001) on 72% of steps   (ungated law would average 1.2439)
+
+         p      RMS Adam   cov%    RMS Route3   cov%  mean s_e   steps A/R
+    0.0001     6.531e-04  100.1     6.376e-04  100.0    0.0896   500/234   STALLED(A)
+    0.0010     6.521e-03  100.8     6.365e-03  100.0    0.0921   500/234   STALLED(A)
+    0.0100     6.406e-02  104.9     6.253e-02  100.0    0.1251   449/234  
+    0.0500     2.910e-01  105.3     2.884e-01   99.9    0.2544   381/238  
+
+  Ratio RMS_Adam / RMS_Route3 (below 1 means Adam tracks its own clean run more
+  closely under the same noise):
+    p=0.0001   ratio = 1.0243
+    p=0.0010   ratio = 1.0246
+    p=0.0100   ratio = 1.0245
+    p=0.0500   ratio = 1.0088
+
+  wrote /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Attack_Route_03/Adam_QITE/figures/target_e2_noisy.png
+
+========================================================================================
+E3  Adam vs Route 3 on the rank-6-of-9 (9-param) ansatz
+========================================================================================
+  Target C of ../adaptive_qite.py handles this ansatz's rank deficiency with a
+  PROACTIVE cap delta_tau <= STIFFNESS_CAP_COEFF/cond(M), coefficient 2000 picked
+  by hand. Third arm below disables that cap entirely and asks whether the
+  variance-normalized law absorbs the stiffness on its own -- with a Route-3
+  cap-off control arm, so a difference can be attributed to the law or the cap.
+  Reference (Target C):
+  rcond=1e-8 -> error 8.868e-04 in 108 steps; rcond=1e-2 -> 2.143e-03 in 17.
+
+     rcond arm                       final E        error            cond(M) range        delta_tau range  steps
+   1.0e-08 Route 3 (cap on)        -1.144712   +8.868e-04         [32.9, 9.66e+06]        [0.000207, 0.5]    108
+   1.0e-08 Route 3 (cap off)       -1.144201   +1.398e-03         [26.2, 9.58e+06]         [0.01526, 0.5]     22
+   1.0e-08 Adam (cap on)           -1.144712   +8.868e-04         [32.9, 9.66e+06]        [0.000207, 0.5]    108
+   1.0e-08 Adam (cap off)          -1.145034   +5.653e-04         [23.9, 9.58e+06]         [0.01492, 0.5]     28
+   1.0e-02 Route 3 (cap on)        -1.143456   +2.143e-03              [19.1, 125]            [0.05, 0.5]     17
+   1.0e-02 Route 3 (cap off)       -1.143456   +2.143e-03              [19.1, 125]            [0.05, 0.5]     17
+   1.0e-02 Adam (cap on)           -1.142285   +3.314e-03              [19.1, 125]            [0.05, 0.5]     14
+   1.0e-02 Adam (cap off)          -1.142285   +3.314e-03              [19.1, 125]            [0.05, 0.5]     14
+
+  wrote /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Attack_Route_03/Adam_QITE/figures/target_e3_stiffness.png
+
+========================================================================================
+Assumptions (ours, on top of ../adaptive_qite.py's)
+========================================================================================
+  1. Assumptions 1-8 of ../adaptive_qite.py are inherited unchanged (finite-difference M and Y at h=1e-6 rather than Hadamard tests; no shot noise, so 'noisy' means biased-but-deterministic; the F8/M5 policy of committing a trial step once max_retries or delta_tau_min is exhausted, with accepted=False recorded; Eq. (7) debiasing applied to M and Y before the solve with the M1-corrected Y factor q^2+q(1-q)/2). This script changes the step-size law and nothing else.
+
+  2. Reading |dE_actual - dE_pred| as an O(delta_tau^2) local truncation error proxy is OUR claim, not the memo's -- the memo never forms an error estimate for Route 3 at all (that is why R_Future_Routes.md R1 proposes step-doubling to get one). It follows from dE_pred = -(Y.theta_dot)*delta_tau being the exact first-order model of the Euler step being taken, so the leading discrepancy is the step's own second-order term. It is a proxy in the energy, not in theta: it measures the truncation error along the one direction the controller can actually observe cheaply.
+
+  3. e_hat is normalized by the SAME band energy_check() already uses to reject a step, band = max(DE_BAND_ABS, DE_BAND_REL*|dE_pred|), so e_hat > 1 is exactly the existing reject condition. No new tolerance is introduced: the controller reuses the gate's own tolerance as its setpoint, and the gate itself is left in place unchanged.
+
+  4. The control law delta_tau *= clip(m_e_hat**(-s_e*K_I), SHRINK, GROW) is our synthesis. The m_e_hat**(-K_I) part is Gustafsson's integral law (R3) with the tolerance folded into e_hat; the new part is the exponent being scaled by the Adam confidence ratio s_e = m_e_hat/(sqrt(v_e_hat)+EPS), which lies in (0,1] by Jensen. A consistent error signal (s_e -> 1) gets the full Gustafsson response; a noise-dominated one (s_e -> 0) drives the exponent to 0 and freezes delta_tau. GROW and SHRINK survive only as clip bounds (a trust region), no longer as the step law itself -- which is the specific thing Assumption 1 of the parent script complains about.
+
+  5. Adam's first-moment EMA already supplies the smoothing a PI controller's I-term provides, so no separate proportional term k_P (e_{n-1}/e_n)^k_P is included in this version. That is a YAGNI call, not a claim that it would not help.
+
+  6. The McLachlan residual channel gets its own EMA pair (m_r, v_r) and enters as a growth CEILING only: growth <- min(growth, (RESIDUAL_REL_TOL/m_r_hat)**(s_r*K_I)) when m_r_hat exceeds RESIDUAL_REL_TOL, which is <= 1 by construction. This preserves Assumption 2 of the parent script: r_n does not depend on delta_tau, so it can never justify rejecting or shrinking the CURRENT step, only withholding growth from the next one. The same K_I is reused for both channels rather than inventing a second exponent.
+
+  7. The EMAs update once per ACCEPTED step, using the accepted trial's e_hat, and the bias correction counts accepted steps. A retry cascade therefore does not feed its rejected trials into the moments -- otherwise a single bad step would be counted several times and would poison v_e for the following ~1/(1-BETA2) steps.
+
+  8. m_e_hat is floored at EPS before exponentiation, so an exactly-perfect prediction (dE_actual == dE_pred, which does happen at delta_tau_min) gives maximum growth rather than a division by zero. The clip to GROW makes the floor's exact value irrelevant.
+
+  9. No constant in this file was adjusted after seeing a result. Where Adam loses to the Route-3 ratchet that is reported as the finding. The hyperparameter ablation (BETA1/BETA2 sensitivity, momentum-only vs RMS-only) is NOT in this pass; this fairness protocol stands in for it, and the ablation remains open work.
+

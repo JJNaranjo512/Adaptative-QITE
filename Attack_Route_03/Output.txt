@@ -1,0 +1,94 @@
+
+========================================================================================
+A  Stage 1 (Sec. 1) -- noiseless adaptive Euler QITE, Route 3 controller
+========================================================================================
+  Exact H2 ground energy (eigh):        -1.145599
+  Adaptive: 172 steps, 172 f-evals, 3 retried-then-accepted, 0 forced through unaccepted, final tau = 3.0134
+    final E = -1.122993  (error +2.261e-02)
+    delta_tau range: [0.001008, 0.298]
+    reason histogram (across all retry attempts): energy increased=2, dE off linear prediction=5
+    last 43 steps: cond(M) cap binding on 31, energy-band retry triggered on 0
+    sigma_min range: [3.464e-07, 0.01804]  cond_spectral (unregularized) range: [32.61, 1.445e+06]
+  Fixed-step (delta_tau=0.05): 61 steps, 61 f-evals, final tau = 3.0500
+    final E = -1.116691  (error +2.891e-02)
+
+  [uncorrected] At matched f-eval budget (61): adaptive E = -1.120992, fixed E = -1.116691
+  Total circuit count (F9/M6): adaptive=2069, fixed=732  (adaptive pays 177 extra circuits across all retries, never counted by n_evals)
+  [corrected] At matched circuit budget (732 circuits): adaptive E = -1.120992, fixed E = -1.116691
+
+  Variational floor of this 5-parameter ansatz (F9/M6, scipy.optimize.minimize, multi-restart): E_floor = -1.124600  (E_floor - E_exact = +2.100e-02)
+    adaptive final E - floor = +1.607e-03
+    fixed final E - floor    = +7.909e-03
+
+  wrote /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Attack_Route_03/figures/target_a_convergence.png
+
+========================================================================================
+B  Stage 2 (Sec. 2) -- depolarizing noise, Eq. (7) debiasing
+========================================================================================
+  Per-step check at fixed theta_0 (F2/F3, M2) -- 'flow-MAGNITUDE error', not
+  'flow-direction error': global depolarizing noise only rescales theta_dot, it
+  never rotates it (collinearity residual below, predicted ~0).
+
+         p  err debiased   err biased   collin.resid     c_meas       c(p)
+    0.0200      0.00000%     5.31458%      1.882e-08   1.053146   1.053146
+    0.1000      0.00000%    34.67544%      1.403e-08   1.346754   1.346754
+
+  Baseline (p=0) final E = -1.122811 (error +2.279e-02)
+
+         p   debias      final E        error   steps   evals
+    0.0200     True    -0.993295   +1.523e-01     164     164
+    0.0200    False    -0.994326   +1.513e-01     168     168
+    0.1000     True    -0.570183   +5.754e-01      79      79
+    0.1000    False    -0.571831   +5.738e-01     144     144
+
+  Deviation of each run's trajectory from the noiseless baseline, on their
+  COMMON tau support only (F4/M3 -- no extrapolation past a stalled run):
+    p=0.0200  debias=True  RMS(common)=1.254e-01  coverage=100.0%  tau_common_end=3.001
+    p=0.0200  debias=False RMS(common)=1.228e-01  coverage=100.3%  tau_common_end=3.001
+    p=0.1000  debias=True  RMS(common)=5.356e-01  coverage=100.0%  tau_common_end=3.000
+    p=0.1000  debias=False RMS(common)=5.314e-01  coverage=100.6%  tau_common_end=3.001
+
+  wrote /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Attack_Route_03/figures/target_b_debiasing.png
+
+========================================================================================
+C  Route 3 point 3 -- cond(M) stiffness proxy, 9-param (rank-6-of-9) ansatz
+========================================================================================
+  The QDP replication found this ansatz's M is exactly rank 6 of 9 (a 2-qubit
+  pure-state manifold has only 2d-2=6 real dimensions), i.e. cond(M) = infinity
+  by construction unless the pseudoinverse is regularized. This target shows
+  Route 3's stiffness cap responding to that directly.
+
+       rcond      final E        error                cond(M) range        delta_tau range   steps
+     1.0e-08    -1.144712   +8.868e-04             [32.9, 9.66e+06] [0.000207, 0.5]          108
+     1.0e-02    -1.143456   +2.143e-03                  [19.1, 125] [0.05, 0.5]           17
+
+  wrote /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Attack_Route_03/figures/target_c_stiffness.png
+
+========================================================================================
+D  our extension of Sec. 2 to Route 3 -- NOT the memo's Eq. (9)
+========================================================================================
+  Eq. (9) is defined in terms of the embedded-pair estimator e_n, which Route 3
+  never computes. This target asks the analogous question for Route 3 directly:
+  at what noise level p does even the DEBIASED trajectory stop tracking the
+  noiseless one, and does debiasing actually buy anything at each p?
+
+         p   RMS debiased   cov%     RMS biased   cov%
+    0.0000      0.000e+00  100.0      0.000e+00  100.0
+    0.0001      6.376e-04  100.0      6.067e-04  100.0
+    0.0010      6.365e-03  100.0      6.051e-03   99.8
+    0.0100      6.253e-02  100.0      5.992e-02  101.9
+    0.0500      2.884e-01   99.9      2.762e-01  104.6
+
+  wrote /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Attack_Route_03/figures/target_d_noise_floor.png
+
+========================================================================================
+Assumptions (ours, not the memo's)
+========================================================================================
+  1. The memo gives no numbers for Route 3's thresholds. RCOND_DEFAULT, DELTA_TAU0/MIN/MAX, GROW, SHRINK, STIFFNESS_CAP_COEFF, ENERGY_MONOTONE_TOL, DE_BAND_ABS/REL and RESIDUAL_REL_TOL above are all our choices, tuned only by inspection of target A's trajectory (never against a paper-reported value -- there isn't one).
+  2. Combination rule for the three Route-3 indicators (our synthesis, not in the memo): cond(M) is applied as a PROACTIVE cap on delta_tau before the trial step (memo: 'cap delta_tau'); the energy-monotonicity/variance-identity check is a REACTIVE accept/reject/retry gate, since it is the only one of the three that actually depends on delta_tau (memo: 'accept the step iff ... reject/shrink on violation'); the McLachlan residual is a REACTIVE-BUT-NOT-RETRIED caution signal -- since r_n = ||M theta_dot - Y|| does not depend on delta_tau at all (it is fixed once theta_n is), retrying with a smaller step cannot change it, so a high relative residual freezes growth for the next step instead of rejecting the current one (memo: 'a spike signals ... delta_tau should shrink', read here as 'should not grow').
+  3. Eq. (7) debiasing is applied to M and Y individually before the pseudoinverse solve (M <- M/(1-p)^2N, Y <- Y/(1-p)^N), matching Algorithm 1's literal step order 'measure M~, Y~; de-bias by (7); solve for k1' and the closed forms M^err=(1-p)^2N M, Y^err=(1-p)^N Y already validated in the QDP replication (Eqs. B12-B13) -- algebraically identical to the memo's own f~ = (1-p)^-N f statement when M is full rank.
+  4. Eq. (9)'s literal noise floor (delta_tau_floor = (kappa_b eps_res ||theta_dot||/C_tr)^1/p) is derived for the embedded-pair estimator e_n of Routes 1/2 and is NOT computed here: Route 3 never forms e_n. Target D builds our own analogous diagnostic instead (energy-trajectory deviation from the noiseless run, debiased vs biased, vs p) and is explicitly not a reproduction of Eq. (9).
+  5. M, Y are built from finite-difference density-matrix derivatives (drho, h=1e-6) on default.qubit/default.mixed, exactly the method already used and validated (against the closed form Eq. B9, to 1e-10) in the QDP replication -- not Hadamard-test circuits. The 'evaluation count' reported for target A therefore counts calls to this shared measure_f(), not physical circuit shots.
+  6. Initial theta_0 is rng.uniform(-0.5, 0.5, size=N_PARAMS) at SEED=0, not the QDP replication's published Appendix-C angles -- those were chosen there to reproduce a specific reported cond(M), not as a sensible QITE starting point. rho_0 = |00>, matching the QDP replication's convention (also unstated by the source papers). Each target uses its own default_rng(SEED_{A,B,C,D}=0,1,2,3) (F7/M5), so a single target run reproduces identically whether invoked alone or as part of --target all; targets do NOT share theta_0 with each other, so any agreement between two targets' numbers is a statement about the physics, not a shared random draw.
+  7. No shot noise is modelled; the global depolarizing channel is applied to the exact density matrix (deterministic), so 'noisy' here means biased-but-deterministic, not stochastic. Route 4 (statistical gating) is explicitly out of scope for this task, and shot noise is the mechanism that would make it necessary.
+  8. F8/M5 policy: on exhausting max_retries or reaching delta_tau_min, the trial step is committed to the trajectory even though the gate still rejects it -- there is nothing better to do at the minimum step size. log['accepted'] records this (False), so it stays usable as a quality signal; a run report should read 'forced through unaccepted' counts, not just 'steps needed a retry'.

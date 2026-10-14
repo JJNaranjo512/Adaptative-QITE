@@ -1,0 +1,197 @@
+
+========================================================================================
+ids  plan sec. 2 point 2 -- exact state-form M, Y vs drho / metric_M / vector_Y
+========================================================================================
+  8 random theta (5- and 9-param), default_rng(0):
+    max |M_exact - M_fd|  = 2.594e-10
+    max |Y_exact - Y_fd|  = 3.955e-10
+    max |Y_exact + Y_fd|  = 1.589e+00   (the opposite sign, for contrast)
+    M = 2 Cov(Gt_j, Gt_k) matches metric_M(drho) to 1e-08                  HOLDS
+    Y = -i<[Gt_k, H]> matches vector_Y to 1e-08 (sign as derived)          HOLDS
+
+  5-param ansatz at theta = 0: CRZ row of M = [0. 0. 0. 0. 0.]
+    CRZ row is exactly zero at theta = 0 (zero-variance mechanism)         HOLDS
+  Eq. (B9) diagonal on the exact M at theta = 0.3: worst |diff| = 7.216e-16
+    exact M satisfies Eq. (B9) to 1e-12                                    HOLDS
+
+========================================================================================
+c  Target C replay, rcond in {1e-8, 1e-2}: what does the logged cond(M) measure?
+========================================================================================
+  Prediction (plan P1, written before this run): sigma_7..9 from drho sit near
+  1e-10..1e-12, below the 1e-8*sigma_1 cutoff, so rank_r_cond (r = 6) equals the
+  logged cond along E3 and the cap is reading conditioning inside the physical range.
+
+  rcond = 1e-08
+    final error (Output: see note)    np.float64(0.0008868181396866071)   pinned 0.0008868181396866071   MATCH
+    steps                                        108   pinned 108   MATCH
+    max logged cond_M                            9663747.736069854   pinned 9663747.736069854   MATCH
+    kept by pinv, per step:                     [6]
+    max sigma_7/sigma_1 over the run:           2.021e-16   (cutoff 1e-08)
+    max |M_fd - M_exact| over the run:          1.652e-10
+    rank-6 cond_F / logged cond_M:              [0.999999999999999, 1.000000000000001]
+    max rank-6 spectral cond sigma_1/sigma_6:   6.8367e+06
+    steps with logged cond_M > 100000:           86 of 108
+    sigma_7/sigma_1 < 1e-12 on every step (no gauge leakage)               HOLDS
+    pinv keeps exactly 6 singular values on every step                     HOLDS
+    rank-6 cond_F equals the logged cond_M to 1e-12 on every step          HOLDS
+    prediction: sigma_7/sigma_1 lies in [1e-12, 1e-10]                     FAILED
+      outcome (1 = held)                         0   pinned 0   MATCH
+
+  rcond = 0.01
+    final error (Output: see note)    np.float64(0.0021434047708084325)   pinned 0.0021434047708084325   MATCH
+    steps                                        17   pinned 17   MATCH
+    max logged cond_M                            125.38857061439889   pinned 125.38857061439889   MATCH
+    kept by pinv, per step:                     [4, 5, 6]
+    max sigma_7/sigma_1 over the run:           1.321e-16   (cutoff 0.01)
+    max |M_fd - M_exact| over the run:          1.715e-10
+    rank-6 cond_F / logged cond_M:              [1.000000000000000, 2593.110482299944124]
+    max rank-6 spectral cond sigma_1/sigma_6:   1.9281e+05
+    steps with logged cond_M > 100000:           0 of 17
+    sigma_7/sigma_1 < 1e-12 on every step (no gauge leakage)               HOLDS
+    NOTE rcond=1e-2 also discards physical directions: kept drops to 4 of 6 on 11 steps
+    steps where pinv keeps < 6                   11   pinned 11   MATCH
+
+  rcond = 1e-8 around the cond peak: parameter speed vs state speed
+        tau     cond_M  |theta_dot|  ||drho/dtau||  frac along v6
+     0.0000  1.156e+04       0.7989         0.1428     0.35125040
+     0.1880  2.492e+06        35.23         0.1826     0.99978911
+     0.1949  7.392e+06         98.8         0.1848     0.99999207
+     0.1983  9.664e+06        128.4         0.1862     0.99999781
+     0.2016  7.476e+06        100.2         0.1877     0.99998866
+     2.8223  3.285e+01       0.6401          0.257     0.27637328
+    peak tau (start of step)                     0.19828322964616446   pinned 0.19828322964616446   MATCH
+    |theta_dot| at peak                          128.43414782028475   pinned 128.43414782028475   MATCH
+    ||drho/dtau|| at peak                        0.18622156320885339   pinned 0.18622156320885339   MATCH
+    |theta_dot| varies by x160.8 over the run; ||drho/dtau|| by x8.83 (max/min)
+
+  wrote /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Route_03_and_Beyond_Trot/Proposal_1/figures/p1_target_c_spectrum.png
+
+========================================================================================
+null  right-singular vectors at the Target C cond peak (rcond = 1e-8)
+========================================================================================
+  step 43, tau = 0.1983, sigma = [9.991e-01 9.828e-01 1.463e-01 9.246e-02 2.142e-02 1.461e-07 1.391e-16 3.323e-17 8.846e-19]
+
+                       v6       v7       v8       v9
+  th1 RY q0         0.035   -0.693   -0.109   -0.000
+  th2 RY q1        -0.172   -0.109    0.638   -0.006
+  th3 RZ q0         0.233   -0.095    0.048    0.008
+  th4 RZ q1         0.033    0.000    0.015   -0.998
+  th5 CRX q0q1      0.000   -0.003   -0.000   -0.000
+  th6 RY q0        -0.069    0.693    0.099   -0.001
+  th7 RY q1         0.164    0.104   -0.609    0.014
+  th8 RZ q0         0.934    0.057    0.262    0.034
+  th9 RZ q1         0.099    0.061   -0.360   -0.049
+
+  softest physical direction v6: top loadings th8 RZ q0 +0.934, th3 RZ q0 +0.233, th2 RY q1 -0.172
+    v6 loading on th8 (RZ q0, layer 2)           0.933728059143997   pinned 0.933728059143997   MATCH
+  <Z_0> at the peak = 0.9944; M[th8,th8] = 5.5680e-03, (1 - <Z_0>^2)/2 = 5.5680e-03
+  (th8 is RZ on q0 followed only by RZ on q1, so Gt_8 = Z_0/2 and M_88 = 2 Var(Z_0/2).)
+  sigma_6 / M[th8,th8] = 2.625e-05: the soft direction is a near-linear
+  dependence of th8's tangent on the others, not only a weak row.
+  gauge v7: largest loadings th1 RY q0 -0.693, th6 RY q0 +0.693
+  gauge v8: largest loadings th2 RY q1 +0.638, th7 RY q1 -0.609
+  gauge v9: largest loadings th4 RZ q1 -0.998, th9 RZ q1 -0.049
+
+  wrote /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Route_03_and_Beyond_Trot/Proposal_1/figures/p1_null_vectors.png
+
+========================================================================================
+e3  the four E3 arms at rcond = 1e-8, same diagnostics
+========================================================================================
+  arm                     error  steps   kept  max s7/s1  |cond6/logged-1|  steps cond>1e5
+  route3_cap_on      8.8682e-04    108    [6]   2.02e-16          1.11e-15              86
+      route3_cap_on error                          np.float64(0.0008868181396866071)   pinned 0.0008868181396866071   MATCH
+      route3_cap_on steps                          108   pinned 108   MATCH
+      route3_cap_on steps in the fold              86   pinned 86   MATCH
+      route3_cap_on: no leakage, pinv keeps 6, rank-6 cond = logged          HOLDS
+  route3_cap_off     1.3979e-03     22    [6]   1.42e-16          5.55e-16               4
+      route3_cap_off error                         np.float64(0.0013979350857165063)   pinned 0.0013979350857165063   MATCH
+      route3_cap_off steps                         22   pinned 22   MATCH
+      route3_cap_off steps in the fold             4   pinned 4   MATCH
+      route3_cap_off: no leakage, pinv keeps 6, rank-6 cond = logged         HOLDS
+  adam_cap_on        8.8682e-04    108    [6]   2.02e-16          1.11e-15              86
+      adam_cap_on error                            np.float64(0.0008868181396866071)   pinned 0.0008868181396866071   MATCH
+      adam_cap_on steps                            108   pinned 108   MATCH
+      adam_cap_on steps in the fold                86   pinned 86   MATCH
+      adam_cap_on: no leakage, pinv keeps 6, rank-6 cond = logged            HOLDS
+  adam_cap_off       5.6530e-04     28    [6]   1.42e-16          5.55e-16               4
+      adam_cap_off error                           np.float64(0.000565295558648593)   pinned 0.000565295558648593   MATCH
+      adam_cap_off steps                           28   pinned 28   MATCH
+      adam_cap_off steps in the fold               4   pinned 4   MATCH
+      adam_cap_off: no leakage, pinv keeps 6, rank-6 cond = logged           HOLDS
+
+========================================================================================
+exact  Target C on the EXACT M, Y (no finite differences)
+========================================================================================
+     rcond arm             error  steps   max cond_M
+     1e-08 fd       8.868181e-04    108  9.66375e+06
+     1e-08 exact    8.854194e-04    108  9.66367e+06
+    exact-metric error                           np.float64(0.000885419437947288)   pinned 0.000885419437947288   MATCH
+    exact-metric steps                           108   pinned 108   MATCH
+    max |E_fd(tau) - E_exact_metric(tau)| = 1.101e-04 at tau = 2.3223; at the common end 6.068e-06
+    max energy gap fd vs exact metric            0.00011006000211699618   pinned 0.00011006000211699618   MATCH
+    same gap restricted to tau < 0.15 (before the Target C fold): 1.292e-11
+
+      0.01 fd       2.143405e-03     17  1.25389e+02
+      0.01 exact    2.143405e-03     17  1.25389e+02
+    exact-metric error                           np.float64(0.002143404750947875)   pinned 0.002143404750947875   MATCH
+    exact-metric steps                           17   pinned 17   MATCH
+    max |E_fd(tau) - E_exact_metric(tau)| = 1.228e-09 at tau = 1.9852; at the common end 1.986e-11
+    max energy gap fd vs exact metric            1.2278327798931343e-09   pinned 1.2278327798931343e-09   MATCH
+    same gap restricted to tau < 0.15 (before the Target C fold): 4.334e-12
+
+
+========================================================================================
+a  control: Target A (5-param, full rank, rcond = 1e-6)
+========================================================================================
+    final error                                  np.float64(0.022605762509368743)   pinned 0.022605762509368743   MATCH
+    steps                                        172   pinned 172   MATCH
+    kept by pinv, per step: [4, 5]; pinv drops a PHYSICAL direction on 12 of 172 steps, tau in [2.945, 2.999]
+    steps where pinv keeps < 5                   12   pinned 12   MATCH
+    softest step tau = 2.9987, sigma_5/sigma_1 = 6.921e-07 (cutoff 1e-06)
+    v5 loadings: th1 RX q0 -0.001, th2 RX q1 +0.024, th3 RY q0 -0.027, th4 RY q1 +0.019, th5 CRZ q0q1 +0.999
+    v5 loading on th5 (CRZ)                      0.9991635802633979   pinned 0.9991635802633979   MATCH
+    basis populations |00>,|01>,|10>,|11> = [7.53165e-04 1.73656e-07 9.99016e-01 2.30342e-04]
+    <Z_1> = 0.99954; M[CRZ,CRZ] = 8.3662e-04
+    -> the state is within ~1e-3 of a computational basis state, on which CRZ only
+       adds a phase: its rotated generator has near-zero variance. That is the
+       plan's sec. 2 zero-variance mechanism, developing as the state converges.
+    max basis population at the softest step     0.9990163198181179   pinned 0.9990163198181179   MATCH
+    |theta_dot| max/min x116.7; ||drho/dtau|| at the softest step 7.619e-02
+
+========================================================================================
+cap  the plan's follow-on: cap on cond over the top r = 6 values only
+========================================================================================
+  Implemented by swapping aq.route3_indicators so its cond_M slot carries the rank-6
+  Frobenius cond. STIFFNESS_CAP_COEFF = 2000 untouched.
+
+     rcond cap on                        error  steps  cap binding   min dtau
+     1e-08 cond_F (shipped)         8.8682e-04    108           82   0.000207
+     1e-08 rank-6 cond_F (P1)       8.8617e-04    108           82   0.000207
+      rank-6 cap error                             np.float64(0.000886166932451804)   pinned 0.000886166932451804   MATCH
+      rank-6 cap steps                             108   pinned 108   MATCH
+      0.01 cond_F (shipped)         2.1434e-03     17            0       0.05
+      0.01 rank-6 cond_F (P1)       3.4051e-03    105           67     0.0001
+      rank-6 cap error                             np.float64(0.003405080644245162)   pinned 0.003405080644245162   MATCH
+      rank-6 cap steps                             105   pinned 105   MATCH
+
+  wrote /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Route_03_and_Beyond_Trot/Proposal_1/figures/p1_regime_aware_cap.png
+
+========================================================================================
+Assumptions (ours, on top of adaptive_qite.py's and adam_qite.py's)
+========================================================================================
+  1. Every physical choice (H2 Hamiltonian, ansaetze, drho at h=1e-6, the Route-3 gate, the cap, the seeds, the Adam law) is imported from adaptive_qite.py / adam_qite.py unchanged. Their own assumption lists apply.
+
+  2. OURS: the exact metric uses the state form of plan sec. 2, M_jk = 2(Re<Gt_j Gt_k> - <Gt_j><Gt_k>), Y_k = -i<[Gt_k, H]>, with Gt_k = P_k G_k P_k^dag, P_k the gates after k, G_k = P/2 for RX/RY/RZ and |1><1| (x) P/2 for CRX/CRZ. Gate matrices come from qml.matrix on adaptive_qite.gate_list, so wire order and sign conventions are PennyLane's, not re-derived. Valid for p = 0 (pure states) only; every run in this script is noiseless.
+
+  3. OURS: the structural rank r = 6 is fixed a priori from 2d-2, never fitted to a spectrum.
+
+  4. OURS: rank_r_cond is reported in the Frobenius form ||M||_F sqrt(sum_{i<=r} sigma_i^-2), which is what adaptive_qite.frobenius_cond returns when pinv keeps exactly r values, so the comparison with the logged cond_M is like for like. The spectral form sigma_1/sigma_r is printed alongside.
+
+  5. OURS: 'state speed' is ||d rho/d tau||_F = sqrt(theta_dot^T M theta_dot) (exact for a pure state, since M is the Gram matrix of the d_k rho). It is the physical speed of the trajectory, independent of how the ansatz is parametrized.
+
+  6. OURS: the regime-aware cap (target cap) is implemented by swapping adaptive_qite's global route3_indicators for one that returns rank_r_cond in the cond_M slot. The cap coefficient (2000) is untouched, as the plan required.
+
+
+========================================================================================
+Ledger: 51 pinned values / claims compared, 0 drifted or failed
+========================================================================================

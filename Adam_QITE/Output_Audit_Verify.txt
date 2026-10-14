@@ -1,0 +1,549 @@
+
+========================================================================================
+Provenance -- what this run measured against
+========================================================================================
+  modules imported (resolved path, mtime):
+    adaptive_qite    /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Attack_Route_03/adaptive_qite.py
+                     mtime 2026-09-04 01:34:08 UTC
+    adam_qite        /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Adam_QITE/adam_qite.py
+                     mtime 2026-09-16 23:38:56 UTC
+
+  git HEAD b93cfb1  (Adam_QITE/ has uncommitted changes)
+
+  python 3.11.15   numpy 2.4.3   scipy 1.17.1   pennylane 0.45.1   matplotlib 3.10.8
+
+  upstream constants these numbers depend on:
+    seeds        SEED_A=0 SEED_C=2 SEED_D=3
+    integration  TAU_MAX=3.0 MAX_STEPS=500 MAX_RETRIES=20
+    step bounds  DELTA_TAU0=0.05 DELTA_TAU_MIN=0.0001 DELTA_TAU_MAX=0.5 GROW=1.25 SHRINK=0.5
+    gate         DE_BAND_ABS=0.001 DE_BAND_REL=0.5 RESIDUAL_REL_TOL=0.05
+    linalg       RCOND_DEFAULT=1e-06 STIFFNESS_CAP_COEFF=2000.0 H_DERIV=1e-06
+    adam         BETA1=0.9 BETA2=0.999 EPS=1e-08 K_I=0.15
+
+========================================================================================
+g2 -- matched vs mismatched EMA horizons  [[G2_Beta2_Horizon_Dominates_Every_Verdict]]
+========================================================================================
+
+  beta1 = 0.9 averages the local-error proxy over ~10 steps; beta2 = 0.999 averages its square
+  over ~1000, on runs of 172-500 steps. The confidence ratio s_e = m_e_hat / sqrt(v_e_hat)
+  divides a ten-step local mean by an RMS that has barely moved off its zero initialization, so
+  Jensen's (0, 1] bound -- which needs ONE weighting, not two -- does not apply. This is what
+  E2's "the premise fails" verdict was actually measuring.
+
+  V9 sweeps the pair at SEED_D. The test is structural: does the stall track the *mismatch*
+  rather than beta2's value?
+
+  V9 -- SEED_D, 5-param, all else at defaults:
+
+    [ran] route3  seed=3 n=5 (defaults)                                   -> 234 steps,  1.5 s
+    [ran] adam    seed=3 n=5 beta1=0.9 beta2=0.999                        -> 500 steps,  3.2 s
+    [ran] adam    seed=3 n=5 beta1=0.999 beta2=0.999                      -> 254 steps,  1.6 s
+    [ran] adam    seed=3 n=5 beta1=0.99 beta2=0.99                        -> 259 steps,  1.7 s
+    [ran] adam    seed=3 n=5 beta1=0.9 beta2=0.9                          -> 244 steps,  1.6 s
+    [ran] adam    seed=3 n=5 beta1=0.999 beta2=0.9                        -> 242 steps,  1.6 s
+           ^ 10 overflow RuntimeWarning(s) in the growth power law, clipped to GROW: overflow encountered in scalar power
+
+  configuration                         steps   tau_end      final E   mean s_e  frozen       exit
+  Route 3 (ratchet)                       234    3.0097    -1.123745        n/a     n/a    tau_max
+  b1=0.9 b2=0.999                         500    2.8615    -1.123002     0.0893     72%  max_steps
+  b1=0.999 b2=0.999  <-- matched          254    3.0269    -1.123757     0.5170      0%    tau_max
+  b1=0.99 b2=0.99  <-- matched            259    3.0226    -1.123736     0.4387      0%    tau_max
+  b1=0.9 b2=0.9  <-- matched              244    3.0093    -1.123736     0.3938      0%    tau_max
+  b1=0.999 b2=0.9  (reversed)             242    3.0077    -1.123740   258.1220      0%    tau_max
+
+  against the recorded V9 table:
+    g2.v9.route3:
+      steps                      recorded=       234  measured=       234  delta=+0  MATCH
+      tau_end                    recorded=    3.0097  measured=3.0097e+00  delta=+2.0e-05  (tol 5.0e-05)  MATCH
+      final E                    recorded= -1.123745  measured=-1.1237e+00  delta=+4.7e-07  (tol 5.0e-07)  MATCH
+      exit_reason                recorded=   tau_max  measured=   tau_max  MATCH
+    g2.v9.0.9_0.999:
+      steps                      recorded=       500  measured=       500  delta=+0  MATCH
+      tau_end                    recorded=    2.8615  measured=2.8615e+00  delta=+4.2e-05  (tol 5.0e-05)  MATCH
+      final E                    recorded= -1.123002  measured=-1.1230e+00  delta=+5.0e-07  (tol 5.0e-07)  MATCH
+      exit_reason                recorded= max_steps  measured= max_steps  MATCH
+      mean s_e                   recorded=    0.0893  measured=8.9274e-02  delta=-2.6e-05  (tol 5.0e-05)  MATCH
+      frozen %                   recorded=        72  measured=        72  delta=+0  MATCH
+    g2.v9.0.999_0.999:
+      steps                      recorded=       254  measured=       254  delta=+0  MATCH
+      tau_end                    recorded=    3.0269  measured=3.0269e+00  delta=+9.7e-06  (tol 5.0e-05)  MATCH
+      final E                    recorded= -1.123757  measured=-1.1238e+00  delta=-2.9e-08  (tol 5.0e-07)  MATCH
+      exit_reason                recorded=   tau_max  measured=   tau_max  MATCH
+      mean s_e                   recorded=    0.5170  measured=5.1700e-01  delta=+5.4e-07  (tol 5.0e-05)  MATCH
+      frozen %                   recorded=         0  measured=         0  delta=+0  MATCH
+    g2.v9.0.99_0.99:
+      steps                      recorded=       259  measured=       259  delta=+0  MATCH
+      tau_end                    recorded=    3.0226  measured=3.0226e+00  delta=-1.8e-05  (tol 5.0e-05)  MATCH
+      final E                    recorded= -1.123736  measured=-1.1237e+00  delta=-3.0e-07  (tol 5.0e-07)  MATCH
+      exit_reason                recorded=   tau_max  measured=   tau_max  MATCH
+      mean s_e                   recorded=    0.4387  measured=4.3875e-01  delta=+4.8e-05  (tol 5.0e-05)  MATCH
+      frozen %                   recorded=         0  measured=         0  delta=+0  MATCH
+    g2.v9.0.9_0.9:
+      steps                      recorded=       244  measured=       244  delta=+0  MATCH
+      tau_end                    recorded=    3.0093  measured=3.0093e+00  delta=-1.3e-05  (tol 5.0e-05)  MATCH
+      final E                    recorded= -1.123736  measured=-1.1237e+00  delta=+1.1e-07  (tol 5.0e-07)  MATCH
+      exit_reason                recorded=   tau_max  measured=   tau_max  MATCH
+      mean s_e                   recorded=    0.3938  measured=3.9381e-01  delta=+1.4e-05  (tol 5.0e-05)  MATCH
+      frozen %                   recorded=         0  measured=         0  delta=+0  MATCH
+    g2.v9.0.999_0.9:
+      steps                      recorded=       242  measured=       242  delta=+0  MATCH
+      tau_end                    recorded=    3.0077  measured=3.0077e+00  delta=+2.6e-06  (tol 5.0e-05)  MATCH
+      final E                    recorded= -1.123740  measured=-1.1237e+00  delta=-2.1e-08  (tol 5.0e-07)  MATCH
+      exit_reason                recorded=   tau_max  measured=   tau_max  MATCH
+      mean s_e                   recorded=  258.1220  measured=2.5812e+02  delta=-5.1e-06  (tol 5.0e-05)  MATCH
+      frozen %                   recorded=         0  measured=         0  delta=+0  MATCH
+
+  NOTE: the b1=0.9 b2=0.999 row exits on max_steps, so its tau_end is set by MAX_STEPS
+        (currently 500), not by convergence. It moves by design if that constant is edited.
+
+
+  V10 -- the same arms in M6's matched-circuit currency, two seeds.
+  E_floor is one measurement, not two: variational_floor carries its own seed=12345
+  and does not depend on theta0 (see ASSUMPTIONS).
+
+    E_floor = -1.124600
+    E_floor                    recorded= -1.124600  measured=-1.1246e+00  delta=-2.2e-16  (tol 5.0e-07)  MATCH
+
+  SEED_A 5-param:
+
+    [ran] route3  seed=0 n=5 (defaults)                                   -> 172 steps,  1.1 s
+    [ran] adam    seed=0 n=5 beta1=0.9 beta2=0.999                        -> 190 steps,  1.2 s
+    [ran] adam    seed=0 n=5 beta1=0.999 beta2=0.999                      -> 181 steps,  1.2 s
+    [ran] adam    seed=0 n=5 beta1=0.99 beta2=0.99                        -> 184 steps,  1.2 s
+    [ran] adam    seed=0 n=5 beta1=0.9 beta2=0.9                          -> 179 steps,  1.1 s
+    matched budget = 2069 circuits, set by: Route 3 (ratchet)
+    matched budget             recorded=      2069  measured=      2069  delta=+0  MATCH
+
+  arm                                       steps   circ     E-floor  @budget(ship)  @budget(corr)     s_e   froz
+  Route 3 (ratchet)                           172   2069  +1.607e-03     +1.607e-03     +1.607e-03     n/a    n/a
+  Adam b1=0.9 b2=0.999 (stock, mismatched)    190   2285  +1.748e-03     +1.860e-03     +1.860e-03   0.140    49%
+  Adam b1=0.999 b2=0.999 (matched)            181   2176  +1.447e-03     +1.803e-03     +1.830e-03   0.407     0%
+  Adam b1=0.99 b2=0.99 (matched)              184   2212  +1.437e-03     +1.841e-03     +1.862e-03   0.355     0%
+  Adam b1=0.9 b2=0.9 (matched)                179   2151  +1.190e-03     +1.800e-03     +1.853e-03   0.200     0%
+
+  against the recorded V10 table:
+    g2.v10.A.route3:
+      steps                      recorded=       172  measured=       172  delta=+0  MATCH
+      circuits                   recorded=      2069  measured=      2069  delta=+0  MATCH
+      E - floor                  recorded=+1.607e-03  measured=1.6066e-03  delta=-3.6e-07  (tol 5.0e-07)  MATCH
+      E@budget (shipped)         recorded=+1.607e-03  measured=1.6066e-03  delta=-3.6e-07  (tol 5.0e-07)  MATCH
+      ^ conventions matching the recorded value: shipped, corrected  (they agree at this budget -- luck, not design)
+    g2.v10.A.0.9_0.999:
+      steps                      recorded=       190  measured=       190  delta=+0  MATCH
+      circuits                   recorded=      2285  measured=      2285  delta=+0  MATCH
+      E - floor                  recorded=+1.748e-03  measured=1.7482e-03  delta=+2.5e-07  (tol 5.0e-07)  MATCH
+      E@budget (shipped)         recorded=+1.860e-03  measured=1.8602e-03  delta=+2.2e-07  (tol 5.0e-07)  MATCH
+      ^ conventions matching the recorded value: shipped, corrected  (they agree at this budget -- luck, not design)
+      mean s_e                   recorded=     0.140  measured=1.4012e-01  delta=+1.2e-04  (tol 5.0e-04)  MATCH
+      frozen %                   recorded=        49  measured=        49  delta=+0  MATCH
+    g2.v10.A.0.999_0.999:
+      steps                      recorded=       181  measured=       181  delta=+0  MATCH
+      circuits                   recorded=      2176  measured=      2176  delta=+0  MATCH
+      E - floor                  recorded=+1.447e-03  measured=1.4468e-03  delta=-2.2e-07  (tol 5.0e-07)  MATCH
+      E@budget (shipped)         recorded=+1.803e-03  measured=1.8030e-03  delta=+3.0e-08  (tol 5.0e-07)  MATCH
+      ^ conventions matching the recorded value: shipped
+      mean s_e                   recorded=     0.407  measured=4.0714e-01  delta=+1.4e-04  (tol 5.0e-04)  MATCH
+      frozen %                   recorded=         0  measured=         0  delta=+0  MATCH
+    g2.v10.A.0.99_0.99:
+      steps                      recorded=       184  measured=       184  delta=+0  MATCH
+      circuits                   recorded=      2212  measured=      2212  delta=+0  MATCH
+      E - floor                  recorded=+1.437e-03  measured=1.4370e-03  delta=-1.6e-09  (tol 5.0e-07)  MATCH
+      E@budget (shipped)         recorded=+1.841e-03  measured=1.8411e-03  delta=+5.1e-08  (tol 5.0e-07)  MATCH
+      ^ conventions matching the recorded value: shipped
+      mean s_e                   recorded=     0.355  measured=3.5463e-01  delta=-3.7e-04  (tol 5.0e-04)  MATCH
+      frozen %                   recorded=         0  measured=         0  delta=+0  MATCH
+    g2.v10.A.0.9_0.9:
+      steps                      recorded=       179  measured=       179  delta=+0  MATCH
+      circuits                   recorded=      2151  measured=      2151  delta=+0  MATCH
+      E - floor                  recorded=+1.190e-03  measured=1.1902e-03  delta=+1.7e-07  (tol 5.0e-07)  MATCH
+      E@budget (shipped)         recorded=+1.800e-03  measured=1.7996e-03  delta=-4.2e-07  (tol 5.0e-07)  MATCH
+      ^ conventions matching the recorded value: shipped
+      mean s_e                   recorded=     0.200  measured=1.9974e-01  delta=-2.6e-04  (tol 5.0e-04)  MATCH
+      frozen %                   recorded=         0  measured=         0  delta=+0  MATCH
+
+  SEED_D 5-param:
+
+    matched budget = 2816 circuits, set by: Route 3 (ratchet)
+    matched budget             recorded=      2816  measured=      2816  delta=+0  MATCH
+
+  arm                                       steps   circ     E-floor  @budget(ship)  @budget(corr)     s_e   froz
+  Route 3 (ratchet)                           234   2816  +8.555e-04     +8.555e-04     +8.555e-04     n/a    n/a
+  Adam b1=0.9 b2=0.999 (stock, mismatched)    500   6006  +1.598e-03     +4.165e-03     +4.180e-03   0.089    72%
+  Adam b1=0.999 b2=0.999 (matched)            254   3054  +8.430e-04     +3.893e-03     +3.950e-03   0.517     0%
+  Adam b1=0.99 b2=0.99 (matched)              259   3114  +8.637e-04     +3.942e-03     +3.987e-03   0.439     0%
+  Adam b1=0.9 b2=0.9 (matched)                244   2934  +8.641e-04     +3.495e-03     +3.644e-03   0.394     0%
+
+  against the recorded V10 table:
+    g2.v10.D.route3:
+      steps                      recorded=       234  measured=       234  delta=+0  MATCH
+      circuits                   recorded=      2816  measured=      2816  delta=+0  MATCH
+      E - floor                  recorded=+8.555e-04  measured=8.5547e-04  delta=-2.9e-08  (tol 5.0e-08)  MATCH
+      E@budget (shipped)         recorded=+8.555e-04  measured=8.5547e-04  delta=-2.9e-08  (tol 5.0e-08)  MATCH
+      ^ conventions matching the recorded value: shipped, corrected  (they agree at this budget -- luck, not design)
+    g2.v10.D.0.9_0.999:
+      steps                      recorded=       500  measured=       500  delta=+0  MATCH
+      circuits                   recorded=      6006  measured=      6006  delta=+0  MATCH
+      E - floor                  recorded=+1.598e-03  measured=1.5985e-03  delta=+5.0e-07  (tol 5.0e-07)  MATCH
+      E@budget (shipped)         recorded=+4.165e-03  measured=4.1654e-03  delta=+4.2e-07  (tol 5.0e-07)  MATCH
+      ^ conventions matching the recorded value: shipped
+      mean s_e                   recorded=     0.089  measured=8.9274e-02  delta=+2.7e-04  (tol 5.0e-04)  MATCH
+      frozen %                   recorded=        72  measured=        72  delta=+0  MATCH
+    g2.v10.D.0.999_0.999:
+      steps                      recorded=       254  measured=       254  delta=+0  MATCH
+      circuits                   recorded=      3054  measured=      3054  delta=+0  MATCH
+      E - floor                  recorded=+8.430e-04  measured=8.4297e-04  delta=-2.9e-08  (tol 5.0e-08)  MATCH
+      E@budget (shipped)         recorded=+3.893e-03  measured=3.8931e-03  delta=+5.7e-08  (tol 5.0e-07)  MATCH
+      ^ conventions matching the recorded value: shipped
+      mean s_e                   recorded=     0.517  measured=5.1700e-01  delta=+5.4e-07  (tol 5.0e-04)  MATCH
+      frozen %                   recorded=         0  measured=         0  delta=+0  MATCH
+    g2.v10.D.0.99_0.99:
+      steps                      recorded=       259  measured=       259  delta=+0  MATCH
+      circuits                   recorded=      3114  measured=      3114  delta=+0  MATCH
+      E - floor                  recorded=+8.637e-04  measured=8.6370e-04  delta=+4.5e-09  (tol 5.0e-08)  MATCH
+      E@budget (shipped)         recorded=+3.942e-03  measured=3.9420e-03  delta=+2.3e-08  (tol 5.0e-07)  MATCH
+      ^ conventions matching the recorded value: shipped
+      mean s_e                   recorded=     0.439  measured=4.3875e-01  delta=-2.5e-04  (tol 5.0e-04)  MATCH
+      frozen %                   recorded=         0  measured=         0  delta=+0  MATCH
+    g2.v10.D.0.9_0.9:
+      steps                      recorded=       244  measured=       244  delta=+0  MATCH
+      circuits                   recorded=      2934  measured=      2934  delta=+0  MATCH
+      E - floor                  recorded=+8.641e-04  measured=8.6411e-04  delta=+1.2e-08  (tol 5.0e-08)  MATCH
+      E@budget (shipped)         recorded=+3.495e-03  measured=3.4951e-03  delta=+5.9e-08  (tol 5.0e-07)  MATCH
+      ^ conventions matching the recorded value: shipped
+      mean s_e                   recorded=     0.394  measured=3.9381e-01  delta=-1.9e-04  (tol 5.0e-04)  MATCH
+      frozen %                   recorded=         0  measured=         0  delta=+0  MATCH
+
+
+  The claims, derived rather than quoted:
+
+  CLAIM (G2): the stall tracks horizon MISMATCH, not beta2's value.
+    matched pairs reaching tau_max:      3/3
+    b1=0.999 b2=0.999 (the blamed value) reaches tau_max: True
+    stock mismatched pair stalls on max_steps: True
+    -> HOLDS
+    (the reversed pair b1=0.999 b2=0.9 finishes too, but with mean s_e 258.1 -- the same mismatch, symptom inverted, and
+     a flat refutation of Assumption 4's claimed bound s_e in (0, 1]; see G7 section 7.2.)
+
+  CLAIM (G2): at matched circuit budget Route 3 beats every Adam configuration.
+    SEED_A: 4/4 Adam arms worse at the matched budget
+    SEED_D: 4/4 Adam arms worse at the matched budget
+    -> HOLDS on the two seeds V10 shows.
+    G2's prose originally said 'all three seeds'; SEED_C was swept but its rows are
+    omitted for the rcond reason G2 gives and are no longer reproducible. G2 has
+    been amended. The rcond-resolved SEED_C sweep remains open work.
+
+========================================================================================
+g5 -- the free error estimator vs R1 step-doubling  [[G5_Error_Estimator_Validated_And_Its_Blind_Spot]]
+========================================================================================
+
+  Y_k = -dE/dtheta_k exactly, so dE_pred = -Y.theta_dot delta_tau is the exact first-order
+  Taylor term and |dE_actual - dE_pred| is a genuine O(delta_tau^2) local-error proxy -- already
+  computed by energy_check on every step, then discarded. The README asserts this premise and
+  never tests it. V2 tests it against the step-doubling estimator R1 proposes, which costs a
+  whole extra measure_f per step.
+
+  Step-doubling algebra predicts the ratio exactly: the full step errs by ~C dtau^2 and two half
+  steps by ~2C(dtau/2)^2 = C dtau^2 / 2, so their difference is C dtau^2 / 2 -- half of what
+  |dE_actual - dE_pred| ~ C dtau^2 measures. The prediction is a constant ratio of 2.
+    [ran] adam    seed=0 n=5 (defaults)                                   -> 190 steps,  1.2 s
+
+    check_replay_matches_shipped_log: worst |replay - log| over 190 steps = 0.00e+00  (tol 1e-12)
+
+  All 40 probed steps (the audit printed twelve of these; its selection
+  rule is unrecoverable, so all are shown -- see ASSUMPTIONS):
+
+   step  delta_tau       e_hat   |dEa-dEp|    e_E_true    ratio     e_theta    cond(M)  acc
+      1    0.05000   7.359e-02   4.579e-04   2.575e-04    1.778   7.345e-04        152    y
+      2    0.06250   9.060e-02   8.144e-04   4.703e-04    1.731   1.226e-03        134    y
+      3    0.07812   1.105e-01   1.482e-03   8.858e-04    1.673   2.075e-03        116    y
+      4    0.09766   1.323e-01   2.751e-03   1.721e-03    1.599   3.559e-03       97.1    y
+      5    0.12207   1.529e-01   5.144e-03   3.428e-03    1.501   6.173e-03       80.1    y
+      6    0.15259   1.637e-01   9.284e-03   6.821e-03    1.361   1.073e-02         66    y
+      7    0.19073   1.423e-01   1.399e-02   1.258e-02    1.112   1.835e-02       56.8    y
+      8    0.23842   3.642e-02   6.096e-03   1.740e-02    0.350   3.222e-02       56.2    y
+      9    0.29802   2.604e-01   6.409e-02   1.081e-02    5.931   9.809e-02       77.5    y
+     10    0.18626   5.227e-01   6.241e-02   1.029e-02    6.065   7.091e-02        200    y
+     11    0.23283   9.454e-01   9.595e-02   3.311e-02    2.898   1.498e-01        369    y
+     12    0.27181   4.033e-01   2.920e-02   8.217e-03    3.553   5.238e-02        529    y
+     13    0.31697   7.544e-01   2.270e-02   1.305e-02    1.740   1.360e+00   3.61e+03    y
+     14    0.00557   2.786e-01   2.786e-04   1.287e-04    2.165   5.236e-03   2.24e+04    y
+     15    0.00641   2.769e-01   2.769e-04   1.277e-04    2.168   7.316e-03   2.25e+04    y
+     16    0.00739   2.464e-01   2.464e-04   1.141e-04    2.160   9.136e-03   2.26e+04    y
+     17    0.00855   1.922e-01   1.922e-04   8.925e-05    2.153   1.026e-02    2.3e+04    y
+     18    0.00991   1.284e-01   1.284e-04   5.890e-05    2.179   1.038e-02   2.38e+04    y
+     19    0.01151   7.191e-02   7.191e-05   3.047e-05    2.360   9.379e-03    2.5e+04    y
+     20    0.01338   3.448e-02   3.448e-05   9.796e-06    3.520   7.367e-03   2.68e+04    y
+     21    0.01556   1.772e-02   1.772e-05   1.549e-06   11.439   4.721e-03   2.92e+04    y
+     22    0.01806   1.490e-02   1.490e-05   6.304e-06    2.364   2.144e-03   3.25e+04    y
+     23    0.02092   1.775e-02   1.775e-05   8.550e-06    2.076   4.506e-04   3.67e+04    y
+     24    0.02416   2.204e-02   2.204e-05   1.059e-05    2.082   9.078e-05   4.24e+04    y
+     25    0.02781   2.693e-02   2.693e-05   1.285e-05    2.096   9.778e-05   5.01e+04    y
+     26    0.03192   3.226e-02   3.226e-05   1.528e-05    2.111   1.232e-04   6.08e+04    y
+     27    0.02634   1.970e-02   1.970e-05   9.420e-06    2.091   8.175e-05   7.59e+04    y
+     28    0.02193   1.248e-02   1.248e-05   6.015e-06    2.075   5.752e-05   9.12e+04    y
+     29    0.01884   8.546e-03   8.546e-06   4.140e-06    2.064   3.952e-05   1.06e+05    y
+     30    0.01654   6.175e-03   6.175e-06   3.003e-06    2.056   2.865e-05   1.21e+05    y
+     31    0.01475   4.644e-03   4.644e-06   2.266e-06    2.050   2.112e-05   1.36e+05    y
+     32    0.01333   3.603e-03   3.603e-06   1.762e-06    2.045   1.664e-05    1.5e+05    y
+     33    0.01216   2.865e-03   2.865e-06   1.404e-06    2.041   1.346e-05   1.65e+05    y
+     34    0.01118   2.325e-03   2.325e-06   1.141e-06    2.038   1.115e-05   1.79e+05    y
+     35    0.01035   1.919e-03   1.919e-06   9.430e-07    2.035   9.368e-06   1.93e+05    y
+     36    0.00964   1.606e-03   1.606e-06   7.904e-07    2.032   7.976e-06   2.07e+05    y
+     37    0.00902   1.361e-03   1.361e-06   6.705e-07    2.030   6.876e-06   2.22e+05    y
+     38    0.00848   1.166e-03   1.166e-06   5.749e-07    2.028   5.980e-06   2.36e+05    y
+     39    0.00800   1.008e-03   1.008e-06   4.975e-07    2.027   5.250e-06    2.5e+05    y
+     40    0.00757   8.789e-04   8.789e-07   4.340e-07    2.025   4.656e-06   2.64e+05    y
+
+  Pearson  corr(log e_raw, log e_E_true) = 0.9902
+  Spearman corr(e_raw, e_E_true)         = 0.9882
+  ratio |dEa-dEp| / e_E_true: median=2.060 min=0.350 max=11.439
+
+  against the recorded V2 aggregates:
+    Pearson (log)              recorded=    0.9902  measured=9.9021e-01  delta=+6.7e-06  (tol 5.0e-05)  MATCH
+    Spearman                   recorded=    0.9882  measured=9.8818e-01  delta=-2.0e-05  (tol 5.0e-05)  MATCH
+    ratio median               recorded=     2.060  measured=2.0603e+00  delta=+2.7e-04  (tol 5.0e-04)  MATCH
+    ratio min                  recorded=     0.350  measured=3.5023e-01  delta=+2.3e-04  (tol 5.0e-04)  MATCH
+    ratio max                  recorded=    11.439  measured=1.1439e+01  delta=-2.5e-04  (tol 5.0e-04)  MATCH
+
+  Converged tail (probed steps 25-40): ratio in [2.025, 2.111], median 2.043
+    G5 records 'settles at 2.03-2.09'; that interval is prose-rounded, and the
+    tail minimum in its own printed table is 2.027. The measured window is shown
+    rather than scored against the prose.
+    Predicted by step-doubling algebra: exactly 2. Tail median is 2.1% off.
+
+  G5's own falsifiable prediction, now tested (no recorded target -- V2 stated the
+  clustering but never computed the correlation). If the blind spot is d_theta M+,
+  the ratio's departure from 2 should track the step-to-step CHANGE in cond(M)
+  rather than its level:
+    Spearman(|log(ratio/2)|, |dlog cond(M)|) = +0.3176   <- change
+    Spearman(|log(ratio/2)|, cond(M))        = -0.8938   <- level
+
+  Both are confounded, and the confound has to be named before either is read as a
+  mechanism: cond(M) rises almost monotonically along the run while the ratio
+  converges to 2, so step index alone predicts both.
+    Spearman(|log(ratio/2)|, step index)     = -0.8538   <- the confound
+    Spearman(cond(M), step index)            = +0.9786
+
+  Controlling for step index (rank partial correlation):
+    partial(|log(ratio/2)|, |dlog cond(M)| | step) = +0.1523   <- change
+    partial(|log(ratio/2)|, cond(M)        | step) = -0.5437   <- level
+    -> NOT SUPPORTED: with step index controlled, the LEVEL of cond(M) still explains at
+       least as much as its change, so the clustering G5 observed is not evidence for the
+       d_theta M+ mechanism specifically. G5's proposed probe needs a different design.
+    Either way this is a NEW result: the raw correlations alone cannot decide it, and
+    reporting them without the confound would have been the wrong answer.
+
+  Provenance: n_probes=40 was recovered by inference, not recorded by the
+  audit (see ASSUMPTIONS). The statistics are monotone in the count, so this matters.
+  G5 quotes the sensitivity to make that argument, so it is checked like any other
+  recorded number -- it was printed but unchecked until a later pass:
+
+    prefix 20 Pearson (log)    recorded=    0.9701  measured=9.7007e-01  delta=-2.8e-05  (tol 5.0e-05)  MATCH
+    prefix 20 ratio median     recorded=     2.157  measured=2.1569e+00  delta=-1.2e-04  (tol 5.0e-04)  MATCH
+    prefix 60 Pearson (log)    recorded=    0.9948  measured=9.9481e-01  delta=+1.2e-05  (tol 5.0e-05)  MATCH
+    prefix 60 ratio median     recorded=     2.026  measured=2.0259e+00  delta=-1.4e-04  (tol 5.0e-04)  MATCH
+
+  The trend favours the estimator: the more of the converged tail is included, the
+  closer the ratio sits to the predicted 2.
+
+  NOT CHECKED in this run: g5.sens.full.pearson_log (0.9983) and
+  g5.sens.full.ratio_median (2.005), the third point of the sensitivity trend.
+  They need all 190 steps probed; pass --g5-full-trajectory to include them.
+  The ledger total below is 2 lower than it would otherwise be.
+
+========================================================================================
+g6-2 -- the ratchet degeneracy  [[G6_Attribution_And_Reproducibility]] section 6.2
+========================================================================================
+
+  G6 section 6.2 records that beta1 = beta2 = 0 with a large k_I collapses the Adam controller
+  onto Route 3's plain ratchet exactly, and notes this claim had no code path -- the same defect
+  as the project-wide audit's F3. It does now.
+
+  Why it is exact, in one line: with beta1 = 0 the EMA keeps only the current sample, and the
+  bias correction c1 = 1 - 0**n = 1 is a no-op, so m_e_hat = e_hat and s_e = 1. growth then
+  reduces to e_hat ** -k_I, which for k_I large and e_hat < 1 (always -- see G4) overflows past
+  GROW and is clipped to it on every step. Clipped-to-GROW on every accepted step IS the ratchet.
+
+    check_cache_determinism: worst |E_run1 - E_run2| = 0.00e+00  (tol 0)
+
+    [ran] adam    seed=0 n=5 beta1=0.0 beta2=0.0 k_i=10.0                 -> 172 steps,  1.1 s
+    [ran] adam    seed=0 n=5 beta1=0.0 beta2=0.0 k_i=0.15                 -> 172 steps,  1.1 s
+
+  configuration                             steps      final E   pinned@GROW
+  Route 3 (ratchet)                           172    -1.122993           n/a
+  Adam b1=b2=0, k_I=10  (degenerate)          172    -1.122993          100%
+  Adam b1=b2=0, k_I=0.15                      172    -1.122928           95%
+  Adam stock b1=0.9 b2=0.999                  190    -1.122852            5%
+
+  against the recorded section 6.2 numbers:
+    g6_2.route3:
+      steps                      recorded=       172  measured=       172  delta=+0  MATCH
+      final E                    recorded= -1.122993  measured=-1.1230e+00  delta=-3.6e-07  (tol 5.0e-07)  MATCH
+    g6_2.k10:
+      steps                      recorded=       172  measured=       172  delta=+0  MATCH
+      final E                    recorded= -1.122993  measured=-1.1230e+00  delta=-3.6e-07  (tol 5.0e-07)  MATCH
+      pinned at GROW %           recorded=       100  measured=       100  delta=+0  MATCH
+    g6_2.k015:
+      steps                      recorded=       172  measured=       172  delta=+0  MATCH
+      final E                    recorded= -1.122928  measured=-1.1229e+00  delta=-5.6e-08  (tol 5.0e-07)  MATCH
+      pinned at GROW %           recorded=        95  measured=        95  delta=+0  MATCH
+    g6_2.stock:
+      steps                      recorded=       190  measured=       190  delta=+0  MATCH
+      final E                    recorded= -1.122852  measured=-1.1229e+00  delta=+2.5e-07  (tol 5.0e-07)  MATCH
+      pinned at GROW %           recorded=         5  measured=         5  delta=+0  MATCH
+
+  IDENTITY: b1=b2=0, k_I=10 must reproduce Route 3 step for step, not merely match
+  its two reported scalars. Comparing the whole trajectory:
+
+    steps             Route 3 = 172   degenerate = 172
+    max |E_n difference|        over 173 logged points = 0.00e+00
+    max |delta_tau_n difference| over 173 logged points = 0.00e+00
+    -> IDENTITY HOLDS, element-wise. This is stronger than the two scalars the note
+       records, and it cost nothing since both logs were already in hand.
+
+  NOTE: at k_I = 10, m_e_hat ** (-s_e * k_i) overflows to inf and np.clip pulls it
+  back to GROW = 1.25 (adam_qite.py:212 and :218). Numerically harmless, and it is
+  precisely why the collapse is exact. numpy's overflow warnings are NOT suppressed:
+  cached_run captures and counts them, so the '^ N overflow RuntimeWarning(s)' line
+  above the k_I=10 arm is the measured count, not a silenced event.
+
+========================================================================================
+g6-3 -- energy_at_budget over-credits by one step  [[G6_Attribution_And_Reproducibility]] section 6.3
+========================================================================================
+
+  energy_at_budget (adam_qite.py:342) takes searchsorted's default side='left' and then indexes
+  E[i + 1]. cum[j] is the total already spent after step j+1, so the correct count of affordable
+  steps is searchsorted(cum, budget, side='right') and the energy reached is E[that]. The
+  shipped version credits each arm with one step it had not finished paying for.
+
+  This matters because energy_at_budget is the instrument that decides E1's verdict.
+
+  Part A -- synthetic run, 5 steps, no retries. n_params=5 gives 2N+1+1 = 12
+  circuits a step, so cum = [12, 24, 36, 48, 60] and every answer is checkable.
+
+    check_synthetic_cost_model: circuit_cumsum = [np.int64(12), np.int64(24), np.int64(36), np.int64(48), np.int64(60)], expected [np.int64(12), np.int64(24), np.int64(36), np.int64(48), np.int64(60)]
+
+    budget  affordable   correct E  reported E    
+        12           1        -1.0        -1.0   ok
+        20           1        -1.0        -2.0   OFF BY ONE STEP
+        24           2        -2.0        -2.0   ok
+        30           2        -2.0        -3.0   OFF BY ONE STEP
+        47           3        -3.0        -4.0   OFF BY ONE STEP
+        48           4        -4.0        -4.0   ok
+    all six rows compared against the recorded synthetic table: 6 rows x 3 fields
+    = 18 comparisons, counted in the drift ledger but printed only on drift, so a
+    silent table above is the pass and the ledger total stays reconcilable.
+
+
+  Part B -- the real E1 arms at SEED_A, in M6's currency.
+
+    [ran] fixed   seed=0 n=5 (defaults)                                   ->  61 steps,  0.4 s
+    matched budget = 732 circuits, set by the fixed arm (this is E1's reduction, verbatim)
+    matched budget             recorded=       732  measured=       732  delta=+0  MATCH
+
+  arm          total  % of run  afford    correct E   reported E    
+  Adam          2285       32%      60    -1.120983    -1.121027   OVER-CREDITED
+  Route 3       2069       35%      60    -1.120952    -1.120992   OVER-CREDITED
+  fixed          732      100%      61    -1.116691    -1.116691   ok
+
+  against the recorded section 6.3 table:
+    g6_3.adam:
+      total circuits             recorded=      2285  measured=      2285  delta=+0  MATCH
+      % of run                   recorded=        32  measured=        32  delta=+0  MATCH
+      steps affordable           recorded=        60  measured=        60  delta=+0  MATCH
+      correct E                  recorded= -1.120983  measured=-1.1210e+00  delta=+1.8e-07  (tol 5.0e-07)  MATCH
+      reported E                 recorded= -1.121027  measured=-1.1210e+00  delta=-1.2e-07  (tol 5.0e-07)  MATCH
+    g6_3.route3:
+      total circuits             recorded=      2069  measured=      2069  delta=+0  MATCH
+      % of run                   recorded=        35  measured=        35  delta=+0  MATCH
+      steps affordable           recorded=        60  measured=        60  delta=+0  MATCH
+      correct E                  recorded= -1.120952  measured=-1.1210e+00  delta=-3.3e-07  (tol 5.0e-07)  MATCH
+      reported E                 recorded= -1.120992  measured=-1.1210e+00  delta=-1.9e-08  (tol 5.0e-07)  MATCH
+    g6_3.fixed:
+      total circuits             recorded=       732  measured=       732  delta=+0  MATCH
+      % of run                   recorded=       100  measured=       100  delta=+0  MATCH
+      steps affordable           recorded=        61  measured=        61  delta=+0  MATCH
+      correct E                  recorded= -1.116691  measured=-1.1167e+00  delta=+4.4e-07  (tol 5.0e-07)  MATCH
+      reported E                 recorded= -1.116691  measured=-1.1167e+00  delta=+4.4e-07  (tol 5.0e-07)  MATCH
+
+
+  Consequence 1 -- does the off-by-one change E1's verdict?
+
+    Route 3 minus Adam at budget, as reported = +3.5e-05
+    Route 3 minus Adam at budget, corrected   = +3.0e-05
+    sign preserved: True -> E1's verdict is unchanged
+    adaptive-vs-fixed gap = 4.3e-03, 925x
+    the size of the correction -- the adaptive-beats-fixed conclusion is not
+    threatened by this defect. The defect is real; its blast radius is small.
+
+  Consequence 2 -- `min` is the wrong reduction, which matters more.
+
+    732 circuits is 32% of Adam's run and 35% of Route 3's.
+    The budget is set by the handicapped fixed-step arm, so the two adaptive arms
+    are compared one third of the way through both -- not at convergence.
+
+    Budget over the ADAPTIVE arms only = 2069 circuits:
+      Adam    E = -1.122740
+      Route 3 E = -1.122993   <- Route 3 ahead
+
+    Both fixes are demonstrated here and NEITHER is applied to adam_qite.py. This
+    script's job is to make the defect reproducible against the shipped code.
+
+========================================================================================
+Assumptions of THIS script -- choices that are ours, not the audit's
+========================================================================================
+   1. Inherits Assumptions 1-8 of adaptive_qite.py and 1-9 of adam_qite.py by construction. Nothing physical is redefined here; this script only re-runs the shipped code and measures.
+
+   2. G5 needs theta_n along the E1 trajectory, which adam_qite_run does not log. Rather than re-implement its step loop -- which would verify the audit against a *copy* of the code, the very defect the audit is about -- theta_n is replayed from the log's own delta_tau plus measure_f. This is valid only because (i) the committed step uses the final post-cap, post-retry delta_tau, which is exactly what log['delta_tau'][n] records, and (ii) nothing but theta and delta_tau carries between steps. check_replay_matches_shipped_log() asserts both, so a future edit breaking either trips an assertion instead of quietly moving a number.
+
+   3. WHAT THE REPLAY CHECK IS AND IS NOT. It is falsifiable -- a post-hoc correction to theta, a logged delta_tau that is the pre-cap rather than the committed value, or any hidden state carried between steps would all make the worst deviation exceed the tolerance. But it is a plumbing check, not physics validation: both the replay and the shipped run call the same measure_f and energy_check, so an error inside either is invisible to it by construction. It licenses target g5's replay premise and nothing more. The non-circular check in this script is the step-doubling comparison in target g5, which puts the module's error estimate against an independently computed one; that one has a target it could have missed, and does not.
+
+   4. THE G5 PROBE COUNT OF 40 IS OURS, RECOVERED BY INFERENCE. The audit records twelve printed rows and five aggregate statistics but never says how many steps V2 probed, and the scratchpad is gone. 40 accepted steps is the prefix that reproduces all five statistics to their recorded digits. The statistics are monotone in the count (see the sensitivity line printed by target g5), so this parameter is load-bearing: it is pinned as the default, not chosen per run. G5 has been amended to record it.
+
+   5. The rule by which the audit selected twelve of those 40 rows to print cannot be recovered. This script prints all 40 instead of inventing a selection rule; the audit's twelve are a subset and can be checked against these by eye.
+
+   6. 'Converged tail' in G5's '2.03-2.09' claim is our operational definition: probed steps 25 through n_probes. The interval is prose-rounded in the note, so the measured [min, max] is printed rather than a pass/fail on the prose.
+
+   7. e_E_true is |E_full - E_two_half| and e_theta is ||theta_full - theta_two_half||_2. The half-step midpoint gets a FRESH measure_f -- that is the circuit cost R1 pays and the reason the estimator under test is free by comparison. The step-doubling arm is a probe only: it never feeds back into the replayed trajectory.
+
+   8. The corrected energy_at_budget cannot be imported (it is the defect under test) and must not be patched into adam_qite.py. energy_at_budget_right() is defined locally and imports circuit_cumsum, so only the single indexing decision is duplicated and the cost model cannot drift from the shipped one. It is a demonstration, not a fix.
+
+   9. G2's V10 table covers SEED_A and SEED_D. Its prose said 'all three seeds'; SEED_C was swept but its rows are omitted for the rcond reason G2 gives, and are no longer reproducible. This script regenerates the two seeds the note actually shows and says so, rather than fabricating a third row. G2 has been amended to match.
+
+  10. variational_floor carries its own seed=12345 and does not depend on theta0, so the audit's two identical E_floor = -1.124600 rows are ONE measurement, not two. Computed once here and printed for both seeds with that stated.
+
+  11. Runs are memoized on (kind, seed, n_params, kwargs), which is safe because each run is a deterministic function of its inputs. check_cache_determinism() re-runs one configuration and asserts identity rather than taking that on trust.
+
+  12. adam_signal_diagnostic is deliberately NOT reused for the sweeps: it closes over the module-level K_I, so its 'ungated k_I' line would mislabel every arm with a swept k_i. arm_stats() computes only the columns the audit reports. This non-reusability is G2's proposed-work item 3.
+
+
+========================================================================================
+What this ledger does NOT cover
+========================================================================================
+
+  The drift count below is a lower bound on the audit's numeric content, not a full
+  accounting of it. A number absent from RECORDED is compared against nothing, and
+  two such numbers have already been found this way -- the V9 0.99/0.99 row (which
+  crashed) and G5's probe-count sensitivity (which printed silently). So the gaps are
+  named here rather than left to be inferred from the key list:
+
+   1. G6 section 6.3's rcond table (four arms x two rcond values, E to six digits). The cap-off arms at rcond=1e-2 are the evidence for re-attributing E3's win to the cond(M) cap, which is the audit's third refutation -- and it is the largest block of audit numbers this script does not regenerate. Reproducing it needs a second sweep dimension; not written.
+
+   2. The s_e maximum of 1.015, which falsifies the claimed s_e in (0,1] bound. It is measured, but by the shipped suite: it lives in Output_Post_Audit.txt (adam_qite.py --target all), not in RECORDED. So the audit's first refutation is reproducible from the repo but NOT from this script's ledger, and a drift in it would not appear in the count below.
+
+   3. E1's and E2's headline numbers generally (190 steps / 2285 circuits / E = -1.122852, the E2 depolarizing ratios 1.0243-1.0088). Same reason: the shipped suite prints them and this script only re-checks the four findings whose evidence came from a scratchpad. Anything adam_qite.py already regenerates on its own was left to it deliberately.
+
+   4. G5's '2.03-2.09 tail' and G6 section 6.1's prose intervals. These are prose-rounded, so a pass/fail against them would be a test of the rounding. The measured interval is printed instead; the known near-miss (tail min ~2.027, just outside the prose) is reported, not fixed.
+
+   5. G7 section 7.2's figure clipping (set_ylim(0, 1.05) hides the s_e excursion). It is a plotting defect with no number to drift.
+
+   6. Everything outside the audit's numeric claims: shot noise, beta1 sweeps, systems beyond 2-qubit H2, seeds beyond three, E3's n=1. Listed in the report as what was not checked.
+
+
+========================================================================================
+Drift ledger
+========================================================================================
+
+  0 of 147 recorded numbers drifted. Adam audit reproduces.
+
+  total wall time 27.6 s

@@ -1,0 +1,232 @@
+
+========================================================================================
+ids  the pluggable loop reproduces adam_qite_run bit for bit (E1, SEED_A)
+========================================================================================
+    adam_qite_run final E                        -1.122851752157184   pinned -1.122851752157184   MATCH
+    adam_qite_run steps                          190   pinned 190   MATCH
+    adam_qite_run circuits                       2285   pinned 2285   MATCH
+    E, delta_tau, growth and circuits identical, step by step              HOLDS
+
+========================================================================================
+ref  exact-metric reference solution, self-check, fd-vs-exact floor
+========================================================================================
+  DOP853 evaluations: exact rtol 1e-11: 1799, exact rtol 1e-13: 4583, fd rtol 1e-07: 37025
+    E_ref(tau = 3)                               -1.1235788430747347   pinned -1.1235788430747347   MATCH
+    self-check max |E(1e-11) - E(1e-13)|         8.251621608224013e-12   pinned 8.251621608224013e-12   MATCH
+    fd-vs-exact floor, max over tau              3.418269478583369e-08   pinned 3.418269478583369e-08   MATCH
+    fd-vs-exact floor, tau in [3, 3.6]           1.1866818638850418e-10   pinned 1.1866818638850418e-10   MATCH
+    reference self-check < 1e-10 (well below every floor)                  HOLDS
+
+========================================================================================
+eps  PI (memo Eq. 17) on error per step, e_n = |dE_actual - dE_pred|/2 <= tol
+========================================================================================
+        tol err(tau_end)    max err  |dtheta|  steps   circ retr  cap%  bnd%  g<1 clipG med e/tol fit
+      1e-06   1.1067e-05  6.977e-03  9.76e-03   1234  14808    0  10.8   0.0  527   131     0.992 yes
+   3.16e-06   1.9022e-05  9.066e-03  1.65e-02    761   9132    0  18.4   0.0  295   145     0.974 yes
+      1e-05   2.5242e-05  1.291e-02  2.84e-02    497   5964    0  29.0   0.0  163   154     0.897  no
+   3.16e-05   2.3316e-05  1.917e-02  4.88e-02    351   4212    0  41.6   0.0   91   164     0.775  no
+     0.0001   1.4299e-05  2.918e-02  8.50e-02    270   3240    0  54.4   0.0   52   165   0.00335  no
+   0.000316   5.6702e-06  4.468e-02  1.51e-01    225   2700    0  65.3   0.0   29   167  0.000261  no
+      0.001   3.6387e-05  6.479e-02  2.58e-01    200   2400    0  73.5   0.0   14   166  4.75e-05  no
+    0.00316   4.2490e-04  8.954e-02  4.15e-01    184   2208    0  79.9   0.0    6   163   9.5e-06  no
+       0.01   2.5438e-04  1.130e-01  7.35e-01    180   2162    2  80.0   0.0    2   169   2.9e-06  no
+
+    tol 1e-06 error at tau_end                   1.1066818965232983e-05   pinned 1.1066818965232983e-05   MATCH
+    tol 1e-06 steps                              1234   pinned 1234   MATCH
+    tol 1e-06 circuits                           14808   pinned 14808   MATCH
+    tol 3.16e-06 error at tau_end                1.9021556839859954e-05   pinned 1.9021556839859954e-05   MATCH
+    tol 3.16e-06 steps                           761   pinned 761   MATCH
+    tol 3.16e-06 circuits                        9132   pinned 9132   MATCH
+    tol 1e-05 error at tau_end                   2.524228554090513e-05   pinned 2.524228554090513e-05   MATCH
+    tol 1e-05 steps                              497   pinned 497   MATCH
+    tol 1e-05 circuits                           5964   pinned 5964   MATCH
+    tol 3.16e-05 error at tau_end                2.3316159837749595e-05   pinned 2.3316159837749595e-05   MATCH
+    tol 3.16e-05 steps                           351   pinned 351   MATCH
+    tol 3.16e-05 circuits                        4212   pinned 4212   MATCH
+    tol 0.0001 error at tau_end                  1.4298887411889893e-05   pinned 1.4298887411889893e-05   MATCH
+    tol 0.0001 steps                             270   pinned 270   MATCH
+    tol 0.0001 circuits                          3240   pinned 3240   MATCH
+    tol 0.000316 error at tau_end                5.670167167570739e-06   pinned 5.670167167570739e-06   MATCH
+    tol 0.000316 steps                           225   pinned 225   MATCH
+    tol 0.000316 circuits                        2700   pinned 2700   MATCH
+    tol 0.001 error at tau_end                   3.6386614772343506e-05   pinned 3.6386614772343506e-05   MATCH
+    tol 0.001 steps                              200   pinned 200   MATCH
+    tol 0.001 circuits                           2400   pinned 2400   MATCH
+    tol 0.00316 error at tau_end                 0.00042490165675235225   pinned 0.00042490165675235225   MATCH
+    tol 0.00316 steps                            184   pinned 184   MATCH
+    tol 0.00316 circuits                         2208   pinned 2208   MATCH
+    tol 0.01 error at tau_end                    0.0002543831119601325   pinned 0.0002543831119601325   MATCH
+    tol 0.01 steps                               180   pinned 180   MATCH
+    tol 0.01 circuits                            2162   pinned 2162   MATCH
+
+========================================================================================
+epus  PI (memo Eq. 17) on error per unit step, e_n / dtau <= tol
+========================================================================================
+        tol err(tau_end)    max err  |dtheta|  steps   circ retr  cap%  bnd%  g<1 clipG med e/tol fit
+   0.000316   2.9473e-05  8.413e-03  6.90e-03   2260  27120    0   6.2   0.0 1110   144         1 yes
+      0.001   3.0816e-05  1.420e-02  1.72e-02    822   9864    0  17.8   0.0  339   162     0.985 yes
+    0.00316   2.4532e-05  2.751e-02  4.65e-02    371   4452    0  39.6   0.0  105   167     0.633  no
+       0.01   1.1781e-05  5.366e-02  1.44e-01    228   2736    0  64.9   0.0   30   166   0.00243  no
+     0.0316   2.4098e-04  8.966e-02  4.30e-01    186   2233    1  78.0   0.0    7   164  0.000407  no
+        0.1   4.7659e-04  1.209e-01  6.87e-01    176   2115    3  81.8   0.0    2   167  0.000108  no
+      0.316   7.0607e-04  1.325e-01  8.93e-01    172   2068    4  83.1   0.0    2   169  3.23e-05  no
+          1   2.4412e-03  1.325e-01  1.20e+00     56    676    4  67.9   0.0    1    54  0.000167  no
+
+    tol 0.000316 error at tau_end                2.947265042618774e-05   pinned 2.947265042618774e-05   MATCH
+    tol 0.000316 steps                           2260   pinned 2260   MATCH
+    tol 0.000316 circuits                        27120   pinned 27120   MATCH
+    tol 0.001 error at tau_end                   3.081567639329208e-05   pinned 3.081567639329208e-05   MATCH
+    tol 0.001 steps                              822   pinned 822   MATCH
+    tol 0.001 circuits                           9864   pinned 9864   MATCH
+    tol 0.00316 error at tau_end                 2.453248806211228e-05   pinned 2.453248806211228e-05   MATCH
+    tol 0.00316 steps                            371   pinned 371   MATCH
+    tol 0.00316 circuits                         4452   pinned 4452   MATCH
+    tol 0.01 error at tau_end                    1.1781226647133991e-05   pinned 1.1781226647133991e-05   MATCH
+    tol 0.01 steps                               228   pinned 228   MATCH
+    tol 0.01 circuits                            2736   pinned 2736   MATCH
+    tol 0.0316 error at tau_end                  0.00024098331224364777   pinned 0.00024098331224364777   MATCH
+    tol 0.0316 steps                             186   pinned 186   MATCH
+    tol 0.0316 circuits                          2233   pinned 2233   MATCH
+    tol 0.1 error at tau_end                     0.00047658629697866495   pinned 0.00047658629697866495   MATCH
+    tol 0.1 steps                                176   pinned 176   MATCH
+    tol 0.1 circuits                             2115   pinned 2115   MATCH
+    tol 0.316 error at tau_end                   0.0007060704835570863   pinned 0.0007060704835570863   MATCH
+    tol 0.316 steps                              172   pinned 172   MATCH
+    tol 0.316 circuits                           2068   pinned 2068   MATCH
+    tol 1 error at tau_end                       0.0024411607664969193   pinned 0.0024411607664969193   MATCH
+    tol 1 steps                                  56   pinned 56   MATCH
+    tol 1 circuits                               676   pinned 676   MATCH
+
+========================================================================================
+fit  tolerance proportionality: alpha per arm, circuits, the break, predictions
+========================================================================================
+  fit set: exit on tau_max, cap-bound < 25%, Delta tau at a bound < 25%, error > 10 x floor (1.187e-09)
+
+  [eps] runs in the fit: 2 of 9  -> NO FIT POSSIBLE (needs >= 3): alpha and circuit slope are nan
+    local slopes d log err / d log tol: +0.47 +0.25 -0.07 -0.42 -0.80 +1.61 +2.13 -0.45
+    alpha (error at tau_end)                     nan   pinned nan   MATCH
+    alpha (max error along the run)              nan   pinned nan   MATCH
+    circuit slope d log circ / d log tol         nan   pinned nan   MATCH
+    break tol: none;  cap tol (>= 25 % cap-bound): 1e-05
+
+  [epus] runs in the fit: 2 of 8  -> NO FIT POSSIBLE (needs >= 3): alpha and circuit slope are nan
+    local slopes d log err / d log tol: +0.04 -0.20 -0.64 +2.62 +0.59 +0.34 +1.08
+    alpha (error at tau_end)                     nan   pinned nan   MATCH
+    alpha (max error along the run)              nan   pinned nan   MATCH
+    circuit slope d log circ / d log tol         nan   pinned nan   MATCH
+    break tol: none;  cap tol (>= 25 % cap-bound): 0.00316
+
+  existing controllers on the same reference (work-precision anchors):
+    route3  error at tau_end 6.3181e-04   steps 172   circuits 2069
+      route3 error at tau_end                      0.00063180598613366   pinned 0.00063180598613366   MATCH
+    adam    error at tau_end 7.2773e-04   steps 190   circuits 2285
+      adam error at tau_end                        0.0007277250511912303   pinned 0.0007277250511912303   MATCH
+
+  Predictions (written before the sweep, see the findings note):
+    NOTE a nan alpha scores FAILED: 1-3, 4 and 6 then fail because no slope could be
+    fitted under the pre-registered fit criteria, not because one was measured out
+    of range.
+    prediction: 1 (plan, as written) eps alpha in [0.8, 1.2]               FAILED
+      outcome (1 = held)                         0   pinned 0   MATCH
+    prediction: 2 eps alpha in [0.4, 0.6]                                  FAILED
+      outcome (1 = held)                         0   pinned 0   MATCH
+    prediction: 3 epus alpha in [0.8, 1.2]                                 FAILED
+      outcome (1 = held)                         0   pinned 0   MATCH
+    prediction: 4 (plan) eps slope breaks where the cap takes over         FAILED
+      outcome (1 = held)                         0   pinned 0   MATCH
+    prediction: 5 growth < 1 on > 0 steps in every run                     HELD
+      outcome (1 = held)                         1   pinned 1   MATCH
+    prediction: 6 eps circuit slope in [-0.6, -0.4]                        FAILED
+      outcome (1 = held)                         0   pinned 0   MATCH
+
+  final E - E_floor (plan's quantity, for the record; E_floor from variational_floor):
+    E_floor                                      -1.1246000000000003   pinned -1.1246000000000003   MATCH
+    E_ref(3) - E_floor = 1.0212e-03  <- the EXACT flow's own distance at tau = 3
+    eps   9.378e-04  8.834e-04  8.787e-04  9.717e-04  9.646e-04  9.526e-04  9.316e-04  1.421e-03  1.189e-03
+    epus  8.319e-04  9.788e-04  9.711e-04  9.542e-04  1.219e-03  1.427e-03  1.712e-03  3.452e-03
+
+  wrote /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Route_03_and_Beyond_Trot/Proposal_2/figures/p2_tol_proportionality.png
+
+========================================================================================
+ablate  POST HOC: the fixed first step, and the error before the cap binds
+========================================================================================
+  Not pre-registered. Added after the fit target: the max error along every run peaks
+  near tau ~ 1 whatever tol is, and every default run starts with the same fixed
+  step DELTA_TAU0 = 0.05. Here: (i) that step's error, (ii) the sweep rerun with the
+  first step at DELTA_TAU_MIN = 0.0001, scored on the max error over tau <= 2
+  (the cap never binds there, checked below). Slopes over the 3 smallest tols.
+
+  [eps] default runs: error after the fixed first step 5.2914e-04, estimator e_1 2.2894e-04
+    [eps] first-step error identical in every default run (tol-blind)      HOLDS
+          tol | default: max err at tau | small first step: max err at tau err(tau_end)   circ 1st cap tau
+        1e-06 |       6.9774e-03   0.94 |                2.4688e-03   0.96   2.0133e-05  15420       2.409
+     3.16e-06 |       9.0657e-03   0.95 |                4.2983e-03   0.96   2.8256e-05   9588       2.352
+        1e-05 |       1.2914e-02   0.95 |                7.4264e-03   0.97   3.5939e-05   6348       2.292
+     3.16e-05 |       1.9170e-02   0.97 |                1.2664e-02   0.98   3.7205e-05   4548       2.234
+       0.0001 |       2.9185e-02   0.98 |                2.0811e-02   0.98   3.2108e-05   3576       2.214
+     0.000316 |       4.4681e-02   0.98 |                3.3035e-02   1.01   1.8042e-05   3012       2.187
+        0.001 |       6.4794e-02   0.96 |                4.8624e-02   1.04   2.6598e-06   2724       2.202
+      0.00316 |       8.9535e-02   1.04 |                6.5700e-02   0.99   3.4109e-05   2556       2.207
+         0.01 |       1.1302e-01   1.02 |                8.1847e-02   1.08   1.2219e-04   2485       2.199
+    default          local slopes of max err: +0.23 +0.31 +0.34 +0.37 +0.37 +0.32 +0.28 +0.20
+    small first step local slopes of max err: +0.48 +0.47 +0.46 +0.43 +0.40 +0.34 +0.26 +0.19
+    small first step: slope of max err (asymptotic) 0.4782977470619917   pinned 0.4782977470619917   MATCH
+    default: slope of max err (asymptotic)       0.26735933546016627   pinned 0.26735933546016627   MATCH
+    small first step: circuit slope (asymptotic) -0.38544745563212884   pinned -0.38544745563212884   MATCH
+    small first step tol 1e-06 max err           0.0024687571204682346   pinned 0.0024687571204682346   MATCH
+    small first step tol 0.01 max err            0.08184707469961139   pinned 0.08184707469961139   MATCH
+    default first-step error                     0.0005291381899473757   pinned 0.0005291381899473757   MATCH
+    [eps] the cap never binds inside tau <= 2 (either sweep)               HOLDS
+    [eps] every small-first-step run exits on tau_max                      HOLDS
+
+  [epus] default runs: error after the fixed first step 5.2914e-04, estimator e_1 4.5788e-03
+    [epus] first-step error identical in every default run (tol-blind)     HOLDS
+          tol | default: max err at tau | small first step: max err at tau err(tau_end)   circ 1st cap tau
+     0.000316 |       8.4131e-03   0.94 |                2.0568e-03   0.96   4.1140e-05  28176       2.332
+        0.001 |       1.4202e-02   0.95 |                6.0539e-03   0.97   5.0073e-05  10404       2.264
+      0.00316 |       2.7509e-02   0.96 |                1.5958e-02   0.98   5.0666e-05   4836       2.206
+         0.01 |       5.3662e-02   1.02 |                3.6245e-02   1.00   2.7467e-05   3120       2.183
+       0.0316 |       8.9656e-02   1.04 |                6.3541e-02   1.07   6.8404e-04   2556       2.171
+          0.1 |       1.2094e-01   1.13 |                8.3793e-02   1.15   2.4333e-04   2499       2.207
+        0.316 |       1.3255e-01   0.99 |                8.8557e-02   0.99   2.5182e-04   2475       2.091
+            1 |       1.3255e-01   0.99 |                8.8557e-02   0.99   7.7333e-04   2368       2.237
+    default          local slopes of max err: +0.45 +0.57 +0.58 +0.45 +0.26 +0.08 +0.00
+    small first step local slopes of max err: +0.94 +0.84 +0.71 +0.49 +0.24 +0.05 +0.00
+    small first step: slope of max err (asymptotic) 0.8897683580668071   pinned 0.8897683580668071   MATCH
+    default: slope of max err (asymptotic)       0.5145184801308876   pinned 0.5145184801308876   MATCH
+    small first step: circuit slope (asymptotic) -0.7653930464344677   pinned -0.7653930464344677   MATCH
+    small first step tol 0.000316 max err        0.002056837691229718   pinned 0.002056837691229718   MATCH
+    small first step tol 1 max err               0.08855690855871301   pinned 0.08855690855871301   MATCH
+    default first-step error                     0.0005291381899473757   pinned 0.0005291381899473757   MATCH
+    [epus] the cap never binds inside tau <= 2 (either sweep)              HOLDS
+    [epus] every small-first-step run exits on tau_max                     HOLDS
+
+  wrote /home/jjnaranjo/Personal-Vault/03_LG_Project/Adaptative_QITE/Route_03_and_Beyond_Trot/Proposal_2/figures/p2_first_step_ablation.png
+
+========================================================================================
+Assumptions (ours, on top of adaptive_qite.py's and adam_qite.py's)
+========================================================================================
+  1. Every physical choice (H2, the 5-param ansatz, SEED_A theta_0, drho at h=1e-6, rcond 1e-6, the cond(M) cap with COEFF 2000, energy_check's gate and DE_BAND_*, GROW, SHRINK, DELTA_TAU0/MIN/MAX, MAX_RETRIES, TAU_MAX) is imported from adaptive_qite.py unchanged. Its own assumption list applies.
+
+  2. OURS: two tolerance semantics. The plan's prediction (alpha ~ 1) is pre-registered for 'explicit Euler with local error control'; for error-per-step control (e_n <= tol) with a p = 1 method, e_n ~ C dtau^2 gives dtau ~ tol^(1/2) and the memo's own E_tot ~ C T dtau^p gives global ~ tol^(1/2). alpha ~ 1 needs error per unit step (e_n/dtau <= tol). Both are run; the plan's prediction is scored as written against the per-step arm.
+
+  3. OURS: e_n = |dE_actual - dE_pred| / 2, the estimator G5 validated against step doubling (ratio 2.060 median over the first 40 E1 steps); the /2 makes it estimate what step doubling estimates. It is an energy-space proxy, not a theta-space error.
+
+  4. OURS: the PI law is memo Eq. (17), dtau_{n+1} = dtau_n (tol/e_n)^k_I (e_{n-1}/e_n)^k_P, at k_I = 0.15, k_P = 0.2 (p = 1). The first step is I-only. The factor is clipped to [SHRINK, GROW] (imported, not retuned) and then to [DELTA_TAU_MIN, DELTA_TAU_MAX] exactly as adam_qite_run clips. It updates once per accepted step on the surviving trial's e_n, as the Adam controller does; since tol is now separate from the band, G4's circularity is broken without feeding it rejected trials (G4 item 2 is not needed and not taken).
+
+  5. OURS: rejection stays energy_check's band, unchanged. There is no reject-on-e_n>tol (the noiseless form of memo Eq. 14); that alternative is untested here.
+
+  6. OURS: the reference is the EXACT-metric ODE theta_dot = pinv(M_exact, 1e-6) Y_exact (P1's exact_metric_and_force) solved by DOP853 at rtol 1e-11, atol 1e-14, self-checked against rtol 1e-13. The fd ODE the controllers integrate cannot be solved that tightly (DOP853 at rtol 1e-8 stalls on the ~1e-10 fd noise, found while sizing the reference), so the fd-vs-exact gap is measured by an fd DOP853 solve at rtol 1e-7 and reported as a floor: errors below 10x it are shown but kept out of the fit.
+
+  7. OURS: the primary error is |E_run(tau_end) - E_ref(tau_end)| at each run's own tau_end; the secondary is the max over accepted steps of |E_run(tau_n) - E_ref(tau_n)|. The plan's 'final E - E_floor' is printed too but is the wrong quantity for proportionality: at tau = 3 the flow itself has not converged, so it mixes truncation error with the distance the exact flow still has to go.
+
+  8. OURS, fixed before the sweep: a run enters the alpha fit iff it exits on tau_max, the cap binds on < 25 % of its steps, Delta tau sits at DELTA_TAU_MIN/MAX on < 25 %, and its primary error is > 10x the reference floor. alpha is the least-squares log-log slope over those runs. The 10x floor criterion was added after sizing the reference and before any controller run.
+
+  9. OURS: the 'break tol' is the first grid tol (ascending) whose local slope to the previous point is < alpha_fit/2; the 'cap tol' is the first grid tol with >= 25 % of steps cap-bound. The plan's break prediction holds iff both exist within one grid point.
+
+  10. No Adam arm is in the sweep: the plan's precondition (the G2 fix, beta1 = beta2) is not met.
+
+
+========================================================================================
+Ledger: 93 pinned values / claims compared, 0 drifted or failed
+========================================================================================
